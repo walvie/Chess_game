@@ -1,0 +1,93 @@
+<mxfile host="Electron" modified="2024-05-03T09:03:21.014Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.2.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="mKB28eScYcIlu6J4F_6f" version="24.2.5" type="device">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="1687" dy="993" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="43hRm_AEZX6h78PSb_x5-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="qBAjYYBK-Vlji8AeGftC-36" target="43hRm_AEZX6h78PSb_x5-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="qBAjYYBK-Vlji8AeGftC-36" value="Game starts" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.terminator;whiteSpace=wrap;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="344" y="19" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="qBAjYYBK-Vlji8AeGftC-104" value="End process" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.terminator;whiteSpace=wrap;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="344" y="990" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="qBAjYYBK-Vlji8AeGftC-120" value="Yes" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="489" y="375" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="qBAjYYBK-Vlji8AeGftC-123" value="No" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="414" y="450" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-0" target="43hRm_AEZX6h78PSb_x5-15" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="618" y="585" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-0" value="Write the current turn it is in the summary file" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="530" y="455" width="176" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-3" target="43hRm_AEZX6h78PSb_x5-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-3" value="Create the summary file" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="326" y="120" width="176" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-8" target="43hRm_AEZX6h78PSb_x5-12" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-8" value="Player makes a move" style="rounded=0;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="354" y="240" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-12" target="43hRm_AEZX6h78PSb_x5-0" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-12" target="43hRm_AEZX6h78PSb_x5-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-12" value="Was the previous move made by white?" style="rhombus;whiteSpace=wrap;html=1;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="339" y="340" width="150" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-15" target="43hRm_AEZX6h78PSb_x5-18" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-15" value="Write the players move in algebraic notation" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="326" y="550" width="176" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-18" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414" y="210" as="targetPoint" />
+            <mxPoint x="303" y="735" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="290" y="735" />
+              <mxPoint x="290" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-18" target="43hRm_AEZX6h78PSb_x5-21" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-18" value="Has the game ended?" style="rhombus;whiteSpace=wrap;html=1;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="339" y="680" width="150" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-21" value="Write which color won" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="326" y="860" width="176" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="43hRm_AEZX6h78PSb_x5-21" target="qBAjYYBK-Vlji8AeGftC-104" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-26" value="Yes" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="414" y="790" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="43hRm_AEZX6h78PSb_x5-27" value="No" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="309" y="715" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="y9O7gCe9zNJGDh9EcSKI-0" value="&lt;b&gt;TPI - Unity chess game&lt;/b&gt;&lt;div style=&quot;font-size: 11px;&quot;&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;By: Arthur Bottemanne&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 11px;&quot;&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Date: 03.05.2024&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 11px;&quot;&gt;&lt;font style=&quot;font-size: 11px;&quot;&gt;Description: Flow diagram representing how the summary file of a game is created and written&lt;/font&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="100" y="950" width="180" height="91" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
