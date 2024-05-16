@@ -1,18 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Piece : MonoBehaviour
+public abstract class Piece : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    enum Team
     {
-        
+        White = 0x1,
+        Black = 0x2,
     }
 
-    // Update is called once per frame
-    void Update()
+    private Team _team;
+    private Tile[][] _validTilesToMove;
+
+    public abstract void GeneratePieceMove();
+
+    public Tile[][] GetValidTilesToMove
     {
-        
+        get { return _validTilesToMove; }
     }
 }

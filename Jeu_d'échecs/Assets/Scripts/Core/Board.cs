@@ -37,19 +37,18 @@ public class Board : MonoBehaviour
         {
             for (int file = 0; file < boardSize; file++)
             {
+                // Get the position in which the tile should be placed.
                 RectTransform tilePrefabRectTransform = _tilePrefab.GetComponent<RectTransform>();
-
                 float tileWidth = tilePrefabRectTransform.sizeDelta.x;
                 float tileHeight = tilePrefabRectTransform.sizeDelta.y;
-
                 Vector3 tilePosition = new Vector3(_xOffset + (tileWidth * rank), _yOffset + (tileHeight * file), 0);
 
+                // Initialise the tile 
                 GameObject tile = Instantiate(_tilePrefab, tilePosition, Quaternion.identity);
-
                 tile.transform.parent = transform;
-
                 tile.name = (char)('a' + rank) + (file + 1).ToString();
 
+                // Change the color of the tile alternating from dark to light squares
                 if ((rank + file) % 2 == 0)
                 {
                     tile.GetComponent<Image>().color = darkSquareColor;
