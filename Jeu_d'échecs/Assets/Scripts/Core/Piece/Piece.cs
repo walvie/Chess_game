@@ -5,12 +5,6 @@ using UnityEngine;
 
 public abstract class Piece : MonoBehaviour
 {
-    enum Team
-    {
-        White = 0x1,
-        Black = 0x2,
-    }
-
     private Team _team;
     private Tile[][] _validTilesToMove;
 
@@ -20,4 +14,10 @@ public abstract class Piece : MonoBehaviour
     {
         get { return _validTilesToMove; }
     }
+}
+
+public enum Team
+{
+    White,
+    Black
 }
