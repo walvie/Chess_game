@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+
 
 public enum PieceType
 {
@@ -20,6 +22,13 @@ public enum PieceType
     BlackKing
 }
 
+public enum InputState
+{
+    None,
+    PieceSelected,
+    DraggingPiece
+}
+
 public class Board : MonoBehaviour
 {
     [Header("TileColors")]
@@ -32,17 +41,23 @@ public class Board : MonoBehaviour
     [Header("Prefabs")]
     public GameObject tilePrefab;
 
+    // Tiles
     private Tile[,] _tiles;
     private const int XOffset = 25;
     private const int YOffset = 60;
+
     private const string PiecesTexture = "Graphics/Sprites/Pieces/Texture/Pieces";
+
+    private Camera _camera;
+    private Tile _selectedPiece;
+    private InputState _currentState;
 
     private static readonly PieceType[,] _initialBoardPosition = new PieceType[8, 8]
     {
         { PieceType.BlackRook, PieceType.BlackKnight, PieceType.BlackBishop, PieceType.BlackQueen, PieceType.BlackKing, PieceType.BlackBishop, PieceType.BlackKnight, PieceType.BlackRook },
         { PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn },
         { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
-        { PieceType.None, PieceType.None, PieceType.BlackQueen, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
+        { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
         { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
         { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
         { PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn },
@@ -83,12 +98,61 @@ public class Board : MonoBehaviour
 
     private Dictionary<string, Sprite> _cachedPieceSprites;
 
-    void Start()
+    private void Start()
     {
         _tiles = new Tile[boardSize, boardSize];
         _cachedPieceSprites = LoadPieceSprites();
 
         InitializeBoard();
+    }
+
+    private void Update()
+    {
+        HandleInput();
+    }
+
+    private void HandleInput()
+    {
+        Mouse mouse = Mouse.current;
+        Vector2 mousePosition = _camera.ScreenToWorldPoint(mouse.position.ReadValue());
+
+        if (_currentState == InputState.None)
+        {
+            HandlePieceSelection(mousePosition);
+        }
+        else if (_currentState == InputState.DraggingPiece)
+        {
+            HandleDragMovement(mousePosition);
+        }
+        else if (_currentState == InputState.PieceSelected)
+        {
+            HandlePointAndClickMovement(mousePosition);
+        }
+
+        if (mouse.rightButton.wasPressedThisFrame)
+        {
+            CancelPieceSelection();
+        }
+    }
+
+    private void HandlePieceSelection(Vector2 mousePosition)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void HandleDragMovement(Vector2 mousePosition)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void HandlePointAndClickMovement(Vector2 mousePosition)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void CancelPieceSelection()
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -156,12 +220,33 @@ public class Board : MonoBehaviour
         pieceObject.SetActive(true);
     }
 
+    /// <summary>
+    /// Adds the corresponding script of the piece to the gameObject
+    /// </summary>
+    /// <param name="pieceObject">The GameObject representing the piece.</param>
+    /// <param name="pieceType">The type of the piece to initialize.</param>
     private void AddPieceScript(GameObject pieceObject, PieceType pieceType)
     {
         if (pieceComponentTypes.TryGetValue(pieceType, out Type componentType))
         {
             pieceObject.AddComponent(componentType);
         }
+    }
+
+    /// <summary>
+    /// Loads all the sprites of the pieces in the dictionary
+    /// </summary>
+    private Dictionary<string, Sprite> LoadPieceSprites()
+    {
+        Sprite[] allPieceSprites = Resources.LoadAll<Sprite>(PiecesTexture);
+        Dictionary<string, Sprite> spriteDictionary = new Dictionary<string, Sprite>();
+
+        foreach (Sprite pieceSprite in allPieceSprites)
+        {
+            spriteDictionary[pieceSprite.name] = pieceSprite;
+        }
+
+        return spriteDictionary;
     }
 
     public void PlacePiece(int index, Piece piece)
@@ -177,18 +262,5 @@ public class Board : MonoBehaviour
     public Tile GetTile(int file, int rank)
     {
         return _tiles[file, rank];
-    }
-
-    private Dictionary<string, Sprite> LoadPieceSprites()
-    {
-        Sprite[] allPieceSprites = Resources.LoadAll<Sprite>(PiecesTexture);
-        Dictionary<string, Sprite> spriteDictionary = new Dictionary<string, Sprite>();
-
-        foreach (Sprite pieceSprite in allPieceSprites)
-        {
-            spriteDictionary[pieceSprite.name] = pieceSprite;
-        }
-
-        return spriteDictionary;
     }
 }
