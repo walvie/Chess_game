@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public enum PieceType
 {
-    None, // Empty square
+    None,
     WhitePawn,
     WhiteKnight,
     WhiteBishop,
@@ -29,70 +30,137 @@ public class Board : MonoBehaviour
     public int boardSize = 8;
 
     [Header("Prefabs")]
-    public GameObject _tilePrefab;
+    public GameObject tilePrefab;
 
     private Tile[,] _tiles;
-    private const int _xOffset = 25;
-    private const int _yOffset = 60;
+    private const int XOffset = 25;
+    private const int YOffset = 60;
+    private const string PiecesTexture = "Graphics/Sprites/Pieces/Texture/Pieces";
 
     private static readonly PieceType[,] _initialBoardPosition = new PieceType[8, 8]
     {
         { PieceType.BlackRook, PieceType.BlackKnight, PieceType.BlackBishop, PieceType.BlackQueen, PieceType.BlackKing, PieceType.BlackBishop, PieceType.BlackKnight, PieceType.BlackRook },
         { PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn, PieceType.BlackPawn },
         { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
-        { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
+        { PieceType.None, PieceType.None, PieceType.BlackQueen, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
         { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
         { PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None, PieceType.None },
         { PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn, PieceType.WhitePawn },
         { PieceType.WhiteRook, PieceType.WhiteKnight, PieceType.WhiteBishop, PieceType.WhiteQueen, PieceType.WhiteKing, PieceType.WhiteBishop, PieceType.WhiteKnight, PieceType.WhiteRook }
     };
 
+    private Dictionary<PieceType, string> pieceSpriteNames = new Dictionary<PieceType, string>
+    {
+        { PieceType.WhitePawn, "PawnW" },
+        { PieceType.BlackPawn, "PawnB" },
+        { PieceType.WhiteKnight, "KnightW" },
+        { PieceType.BlackKnight, "KnightB" },
+        { PieceType.WhiteBishop, "BishopW" },
+        { PieceType.BlackBishop, "BishopB" },
+        { PieceType.WhiteRook, "RookW" },
+        { PieceType.BlackRook, "RookB" },
+        { PieceType.WhiteQueen, "QueenW" },
+        { PieceType.BlackQueen, "QueenB" },
+        { PieceType.WhiteKing, "KingW" },
+        { PieceType.BlackKing, "KingB" }
+    };
+
+    private Dictionary<PieceType, Type> pieceComponentTypes = new Dictionary<PieceType, Type>
+    {
+        { PieceType.WhitePawn, typeof(Pawn) },
+        { PieceType.BlackPawn, typeof(Pawn) },
+        { PieceType.WhiteKnight, typeof(Knight) },
+        { PieceType.BlackKnight, typeof(Knight) },
+        { PieceType.WhiteBishop, typeof(Bishop) },
+        { PieceType.BlackBishop, typeof(Bishop) },
+        { PieceType.WhiteRook, typeof(Rook) },
+        { PieceType.BlackRook, typeof(Rook) },
+        { PieceType.WhiteQueen, typeof(Queen) },
+        { PieceType.BlackQueen, typeof(Queen) },
+        { PieceType.WhiteKing, typeof(King) },
+        { PieceType.BlackKing, typeof(King) }
+    };
+
+    private Dictionary<string, Sprite> _cachedPieceSprites;
+
     void Start()
     {
         _tiles = new Tile[boardSize, boardSize];
+        _cachedPieceSprites = LoadPieceSprites();
 
         InitializeBoard();
     }
 
+    /// <summary>
+    /// Initialize the tiles of the board
+    /// </summary>
     public void InitializeBoard()
     {
+        // cache the size of the tile prefab
+        RectTransform tilePrefabRectTransform = tilePrefab.GetComponent<RectTransform>();
+        float tileWidth = tilePrefabRectTransform.sizeDelta.x;
+        float tileHeight = tilePrefabRectTransform.sizeDelta.y;
+
         for (int rank = 0; rank < boardSize; rank++)
         {
             for (int file = 0; file < boardSize; file++)
             {
                 // Get the position in which the tile should be placed
-                RectTransform tilePrefabRectTransform = _tilePrefab.GetComponent<RectTransform>();
-                float tileWidth = tilePrefabRectTransform.sizeDelta.x;
-                float tileHeight = tilePrefabRectTransform.sizeDelta.y;
-                Vector3 tilePosition = new Vector3(_xOffset + (tileWidth * rank), _yOffset + (tileHeight * file), 0);
+                Vector3 tilePosition = new Vector3(XOffset + (tileWidth * rank), YOffset + (tileHeight * file), 0);
 
-                // Initialise the tile 
-                GameObject tile = Instantiate(_tilePrefab, tilePosition, Quaternion.identity);
-                tile.transform.SetParent(transform);
-                tile.name = (char)('a' + rank) + (file + 1).ToString();
+                // Initialise the tile
+                GameObject tileObject = Instantiate(tilePrefab, tilePosition, Quaternion.identity);
+                tileObject.transform.SetParent(transform);
+                tileObject.name = (char)('a' + rank) + (file + 1).ToString();
 
                 // Change the color of the tile alternating from dark to light squares
-                if ((rank + file) % 2 == 0)
-                {
-                    tile.GetComponent<Image>().color = darkSquareColor;
-                }
-                else
-                {
-                    tile.GetComponent<Image>().color = lightSquareColor;
-                }
+                Image tileImage = tileObject.GetComponent<Image>();
+                tileImage.color = ((file + rank) % 2 == 0) ? darkSquareColor : lightSquareColor;
 
-                GameObject tilePiece = tile.transform.Find("Piece").gameObject;
+                // Add tile to the tiles array
+                Tile tileScript = tileObject.GetComponent<Tile>();
+                _tiles[file, rank] = tileScript;
 
-                switch (_initialBoardPosition[rank, file])
-                {
-                    case PieceType.WhitePawn:
-                        tilePiece.GetComponent<Image>().sprite = LoadPieceSprite(GetSpriteName(PieceType.WhitePawn));
-                        tilePiece.AddComponent<Pawn>();
-                        break;
-                }
+                GameObject tilePieceObject = tileObject.transform.Find("Piece").gameObject;
 
-                _tiles[file, rank] = tile.GetComponent<Tile>();
+                InitializePiece(_initialBoardPosition[boardSize - 1 - file, rank], tilePieceObject);
             }
+        }
+    }
+
+    /// <summary>
+    /// Initialize the piece according to it's type
+    /// </summary>
+    /// <param name="pieceType">The type of the piece to initialize.</param>
+    /// <param name="pieceObject">The GameObject representing the piece.</param>
+    private void InitializePiece(PieceType pieceType, GameObject pieceObject)
+    {
+        if (pieceType == PieceType.None) return;
+
+        if (!pieceSpriteNames.TryGetValue(pieceType, out string spriteName))
+        {
+            Debug.LogError($"No sprite name found for {pieceType}");
+            return;
+        }
+
+        if (!_cachedPieceSprites.TryGetValue(spriteName, out Sprite sprite))
+        {
+            Debug.LogError($"No sprite found for {spriteName}");
+            return;
+        }
+
+        Image pieceImage = pieceObject.GetComponent<Image>();
+        pieceImage.sprite = sprite;
+
+        AddPieceScript(pieceObject, pieceType);
+        pieceObject.SetActive(true);
+    }
+
+    private void AddPieceScript(GameObject pieceObject, PieceType pieceType)
+    {
+        if (pieceComponentTypes.TryGetValue(pieceType, out Type componentType))
+        {
+            pieceObject.AddComponent(componentType);
         }
     }
 
@@ -106,33 +174,21 @@ public class Board : MonoBehaviour
         get { return  _tiles; }
     }
 
-    public Tile GetTile(int row, int column)
+    public Tile GetTile(int file, int rank)
     {
-        return _tiles[row, column];
+        return _tiles[file, rank];
     }
 
-    private Sprite LoadPieceSprite(string pieceName)
+    private Dictionary<string, Sprite> LoadPieceSprites()
     {
-        return Resources.Load<Sprite>($"Graphics/Sprites/Pieces/Texture/{pieceName}");
-    }
+        Sprite[] allPieceSprites = Resources.LoadAll<Sprite>(PiecesTexture);
+        Dictionary<string, Sprite> spriteDictionary = new Dictionary<string, Sprite>();
 
-    private string GetSpriteName(PieceType pieceType)
-    {
-        switch (pieceType)
+        foreach (Sprite pieceSprite in allPieceSprites)
         {
-            case PieceType.WhitePawn: return "PawnW";
-            case PieceType.WhiteKnight: return "KnightW";
-            case PieceType.WhiteBishop: return "BishopW";
-            case PieceType.WhiteRook: return "RookW";
-            case PieceType.WhiteQueen: return "QueenW";
-            case PieceType.WhiteKing: return "KingW";
-            case PieceType.BlackPawn: return "PawnB";
-            case PieceType.BlackKnight: return "KnightB";
-            case PieceType.BlackBishop: return "BishopB";
-            case PieceType.BlackRook: return "RookB";
-            case PieceType.BlackQueen: return "QueenB";
-            case PieceType.BlackKing: return "KingB";
-            default: return null;
+            spriteDictionary[pieceSprite.name] = pieceSprite;
         }
+
+        return spriteDictionary;
     }
 }
