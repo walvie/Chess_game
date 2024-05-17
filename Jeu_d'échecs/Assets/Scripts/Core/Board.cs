@@ -43,8 +43,8 @@ public class Board : MonoBehaviour
 
     // Tiles
     private Tile[,] _tiles;
-    private const int XOffset = 25;
-    private const int YOffset = 60;
+    private const int XOffset = -450;
+    private const int YOffset = -263;
 
     private const string PiecesTexture = "Graphics/Sprites/Pieces/Texture/Pieces";
 
@@ -100,6 +100,7 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
+        _camera = Camera.main;
         _tiles = new Tile[boardSize, boardSize];
         _cachedPieceSprites = LoadPieceSprites();
 
@@ -137,7 +138,21 @@ public class Board : MonoBehaviour
 
     private void HandlePieceSelection(Vector2 mousePosition)
     {
-        throw new NotImplementedException();
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            Vector2 worldPosition = mousePosition;
+
+            Debug.Log(worldPosition);
+
+            // Create a raycast to detect the tile game object
+            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+
+            if (hit.collider != null)
+            {
+                GameObject tileGameObject = hit.collider.gameObject;
+                tileGameObject.GetComponent<Image>().color = new Color32(155, 0, 0, 255);
+            }
+        }
     }
 
     private void HandleDragMovement(Vector2 mousePosition)
