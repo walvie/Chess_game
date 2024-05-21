@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Bishop : Piece
 {
-    public override void GeneratePieceMove()
+    public override List<Tile> GeneratePieceMoves()
     {
         throw new System.NotImplementedException();
     }

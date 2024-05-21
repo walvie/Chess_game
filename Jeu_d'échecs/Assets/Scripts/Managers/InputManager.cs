@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ public enum InputState
 public class InputManager : MonoBehaviour
 {
     public Color32 selectedTileColor = new Color32(90, 200, 90, 255);
+    public Color32 possibleTilesToMoveColor = new Color32(90, 90, 90, 255);
 
     [SerializeField]
     private GameObject _boardGameObject;
@@ -19,6 +21,7 @@ public class InputManager : MonoBehaviour
     private Camera _camera;
     private Tile _selectedTile;
     private InputState _currentState;
+    private List<Tile> _possibleTilesToMove;
 
     private void Awake()
     {
@@ -70,6 +73,9 @@ public class InputManager : MonoBehaviour
 
         _selectedTile = tileScript;
         tileScript.ChangeTileColor(selectedTileColor);
+
+        _possibleTilesToMove = GeneratePieceMoves(tilePiece);
+
         _currentState = InputState.PieceSelected;
     }
 
@@ -104,6 +110,9 @@ public class InputManager : MonoBehaviour
             CancelPieceSelection();
             _selectedTile = tileScript;
             _selectedTile.ChangeTileColor(selectedTileColor);
+
+            _possibleTilesToMove = GeneratePieceMoves(tilePiece);
+
             _currentState = InputState.PieceSelected;
         }
     }
@@ -117,6 +126,32 @@ public class InputManager : MonoBehaviour
 
         tileScript.ChangeTileColor(_selectedTile.DefaultColor);
         _selectedTile = null;
+
+        if (_possibleTilesToMove.Count != 0)
+        {
+            Debug.Log("clearing possibles tiles to move");
+            foreach(Tile tile in _possibleTilesToMove)
+            {
+                tile.ChangeTileColor(tile.DefaultColor);
+            }
+
+            _possibleTilesToMove = new List<Tile>();
+        }
+
         _currentState = InputState.None;
+    }
+
+    private List<Tile> GeneratePieceMoves(Piece selectedTilePiece)
+    {
+        Debug.Log("Adding possibles tiles to move");
+
+        List<Tile> possibleTiles = selectedTilePiece.GeneratePieceMoves();
+
+        foreach (Tile tile in possibleTiles)
+        {
+            tile.ChangeTileColor(possibleTilesToMoveColor);
+        }
+
+        return possibleTiles;
     }
 }

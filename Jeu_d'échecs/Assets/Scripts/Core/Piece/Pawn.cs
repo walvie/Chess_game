@@ -18,7 +18,7 @@ public class Pawn : Piece
         (_pieceFile, _pieceRank) = GetPieceTileIndexes();
     }
 
-    public override void GeneratePieceMove()
+    public override List<Tile> GeneratePieceMoves()
     {
         int moveDirection = 1;
 
@@ -43,17 +43,19 @@ public class Pawn : Piece
         // Take diagonally
         moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank - 1];
 
-        if (moveTile.OccupyingPiece.Team != _team)
+        if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
         {
             _validTilesToMove.Add(moveTile);
         }
 
         moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank + 1];
 
-        if (moveTile.OccupyingPiece.Team != _team)
+        if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
         {
             _validTilesToMove.Add(moveTile);
         }
+
+        return _validTilesToMove;
     }
 
     private (int, int) GetPieceTileIndexes()

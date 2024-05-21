@@ -14,9 +14,9 @@ public abstract class Piece : MonoBehaviour
 
     public PieceType pieceType;
 
-    public abstract void GeneratePieceMove();
+    public abstract List<Tile> GeneratePieceMoves();
 
-    public List<Tile> GetValidTilesToMove
+    public List<Tile> GetValidTilesToMoves
     {
         get { return _validTilesToMove; }
     }
