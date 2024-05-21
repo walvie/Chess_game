@@ -85,7 +85,7 @@ public class Board : MonoBehaviour
                 // Add tile to the tiles array
                 Tile tileScript = tileObject.GetComponent<Tile>();
                 _tiles[file, rank] = tileScript;
-                tileScript.defaultColor = tileImage.color;
+                tileScript.DefaultColor = tileImage.color;
 
                 GameObject tilePieceObject = tileObject.transform.Find("Piece").gameObject;
 
@@ -117,7 +117,7 @@ public class Board : MonoBehaviour
 
     public void MovePiece(Tile departureTile, Tile destinationTile)
     {
-        PieceType pieceToMove = departureTile.GetOccupyingPiece.pieceType;
+        PieceType pieceToMove = departureTile.OccupyingPiece.pieceType;
 
         departureTile.RemovePiece();
 

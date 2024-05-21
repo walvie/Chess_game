@@ -9,7 +9,7 @@ public enum Team
 
 public abstract class Piece : MonoBehaviour
 {
-    public Team team;
+    protected Team _team;
     protected List<Tile> _validTilesToMove = new List<Tile>();
 
     public PieceType pieceType;
@@ -19,5 +19,11 @@ public abstract class Piece : MonoBehaviour
     public List<Tile> GetValidTilesToMove
     {
         get { return _validTilesToMove; }
+    }
+
+    public Team Team
+    {
+        get { return _team; }
+        set { _team = value; }
     }
 }

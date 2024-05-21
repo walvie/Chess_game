@@ -71,7 +71,7 @@ public class InputManager : MonoBehaviour
                 GameObject tileGameObject = hit.collider.gameObject;
                 Image tileImage = tileGameObject.GetComponent<Image>();
                 Tile tileScript = tileGameObject.GetComponent<Tile>();
-                Piece tilePiece = tileScript.GetOccupyingPiece;
+                Piece tilePiece = tileScript.OccupyingPiece;
 
                 if (tilePiece != null)
                 {
@@ -102,15 +102,15 @@ public class InputManager : MonoBehaviour
                 GameObject tileGameObject = hit.collider.gameObject;
                 Image tileImage = tileGameObject.GetComponent<Image>();
                 Tile tileScript = tileGameObject.GetComponent<Tile>();
-                Piece tilePiece = tileScript.GetOccupyingPiece;
-                Piece selectedTilePiece = _selectedTile.GetOccupyingPiece;
+                Piece tilePiece = tileScript.OccupyingPiece;
+                Piece selectedTilePiece = _selectedTile.OccupyingPiece;
 
                 if (tilePiece == null)
                 {
                     _boardScript.MovePiece(_selectedTile, tileScript);
                     CancelPieceSelection();
                 }
-                else if (tilePiece.team != selectedTilePiece.team) 
+                else if (tilePiece.Team != selectedTilePiece.Team) 
                 {
                     _boardScript.MovePiece(_selectedTile, tileScript);
                     CancelPieceSelection();
@@ -133,7 +133,7 @@ public class InputManager : MonoBehaviour
         GameObject tileGameObject = _selectedTile.gameObject;
         Image tileImage = tileGameObject.GetComponent<Image>();
 
-        tileImage.color = _selectedTile.defaultColor;
+        tileImage.color = _selectedTile.DefaultColor;
         _selectedTile = null;
         _currentState = InputState.None;
 }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class Tile : MonoBehaviour
 {
-    public Color defaultColor;
+    private Color _defaultColor;
 
     private Piece _occupyingPiece;
 
@@ -25,9 +25,16 @@ public class Tile : MonoBehaviour
         { PieceType.BlackKing, typeof(King) }
     };
 
-    public Piece GetOccupyingPiece
+    public Piece OccupyingPiece
     {
         get { return _occupyingPiece; }
+        set { _occupyingPiece = value; }
+    }
+
+    public Color DefaultColor
+    {
+        get { return _defaultColor; }
+        set { _defaultColor = value; }
     }
 
     public Piece PlacePiece(PieceType pieceToPlace)
@@ -65,7 +72,7 @@ public class Tile : MonoBehaviour
             
             pieceScript.pieceType = pieceType;
 
-            pieceScript.team = (((int)pieceType) < 7) ? Team.White : Team.Black;
+            pieceScript.Team = (((int)pieceType) < 7) ? Team.White : Team.Black;
 
             return pieceScript;
         }
