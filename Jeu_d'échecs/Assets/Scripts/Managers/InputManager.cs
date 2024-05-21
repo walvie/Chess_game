@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -6,8 +5,7 @@ using UnityEngine.UI;
 public enum InputState
 {
     None,
-    PieceSelected,
-    DraggingPiece
+    PieceSelected
 }
 
 public class InputManager : MonoBehaviour
@@ -42,10 +40,6 @@ public class InputManager : MonoBehaviour
         {
             HandlePieceSelection(mousePosition);
         }
-        else if (_currentState == InputState.DraggingPiece)
-        {
-            HandleDragMovement(mousePosition);
-        }
         else if (_currentState == InputState.PieceSelected)
         {
             HandlePointAndClickMovement(mousePosition);
@@ -59,70 +53,58 @@ public class InputManager : MonoBehaviour
 
     private void HandlePieceSelection(Vector2 mousePosition)
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            Vector2 worldPosition = mousePosition;
+        if (!Mouse.current.leftButton.wasPressedThisFrame) return;
 
-            // Create a raycast to detect the tile game object
-            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+        Vector2 worldPosition = mousePosition;
 
-            if (hit.collider != null)
-            {
-                GameObject tileGameObject = hit.collider.gameObject;
-                Image tileImage = tileGameObject.GetComponent<Image>();
-                Tile tileScript = tileGameObject.GetComponent<Tile>();
-                Piece tilePiece = tileScript.OccupyingPiece;
+        // Create a raycast to detect the clicked tile game object
+        RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
 
-                if (tilePiece != null)
-                {
-                    _selectedTile = tileScript;
-                    tileImage.color = selectedTileColor;
-                    _currentState = InputState.PieceSelected;
-                }
-            }
-        }
-    }
+        if (hit.collider == null) return;
 
-    private void HandleDragMovement(Vector2 mousePosition)
-    {
-        throw new NotImplementedException();
+        GameObject tileGameObject = hit.collider.gameObject;
+        Tile tileScript = tileGameObject.GetComponent<Tile>();
+        Piece tilePiece = tileScript.OccupyingPiece;
+
+        if (tilePiece == null) return;
+
+        _selectedTile = tileScript;
+        tileScript.ChangeTileColor(selectedTileColor);
+        _currentState = InputState.PieceSelected;
     }
 
     private void HandlePointAndClickMovement(Vector2 mousePosition)
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+
+        Vector2 worldPosition = mousePosition;
+
+        // Create a raycast to detect the tile game object
+        RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+
+        if (hit.collider == null) return;
+
+        GameObject tileGameObject = hit.collider.gameObject;
+        Tile tileScript = tileGameObject.GetComponent<Tile>();
+        Piece tilePiece = tileScript.OccupyingPiece;
+        Piece selectedTilePiece = _selectedTile.OccupyingPiece;
+
+        if (tilePiece == null)
         {
-            Vector2 worldPosition = mousePosition;
-
-            // Create a raycast to detect the tile game object
-            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
-
-            if (hit.collider != null)
-            {
-                GameObject tileGameObject = hit.collider.gameObject;
-                Image tileImage = tileGameObject.GetComponent<Image>();
-                Tile tileScript = tileGameObject.GetComponent<Tile>();
-                Piece tilePiece = tileScript.OccupyingPiece;
-                Piece selectedTilePiece = _selectedTile.OccupyingPiece;
-
-                if (tilePiece == null)
-                {
-                    _boardScript.MovePiece(_selectedTile, tileScript);
-                    CancelPieceSelection();
-                }
-                else if (tilePiece.Team != selectedTilePiece.Team) 
-                {
-                    _boardScript.MovePiece(_selectedTile, tileScript);
-                    CancelPieceSelection();
-                }
-                else
-                {
-                    CancelPieceSelection();
-                    _selectedTile = tileScript;
-                    tileImage.color = selectedTileColor;
-                    _currentState = InputState.PieceSelected;
-                }
-            }
+            _boardScript.MovePiece(_selectedTile, tileScript);
+            CancelPieceSelection();
+        }
+        else if (tilePiece.Team != selectedTilePiece.Team) 
+        {
+            _boardScript.MovePiece(_selectedTile, tileScript);
+            CancelPieceSelection();
+        }
+        else
+        {
+            CancelPieceSelection();
+            _selectedTile = tileScript;
+            _selectedTile.ChangeTileColor(selectedTileColor);
+            _currentState = InputState.PieceSelected;
         }
     }
 
@@ -131,10 +113,10 @@ public class InputManager : MonoBehaviour
         if (_selectedTile == null) return;
 
         GameObject tileGameObject = _selectedTile.gameObject;
-        Image tileImage = tileGameObject.GetComponent<Image>();
+        Tile tileScript = tileGameObject.GetComponent<Tile>();
 
-        tileImage.color = _selectedTile.DefaultColor;
+        tileScript.ChangeTileColor(_selectedTile.DefaultColor);
         _selectedTile = null;
         _currentState = InputState.None;
-}
+    }
 }
