@@ -12,13 +12,20 @@ public enum InputState
 
 public class InputManager : MonoBehaviour
 {
+    public Color32 selectedTileColor = new Color32(90, 200, 90, 255);
+
+    [SerializeField]
+    private GameObject _boardGameObject;
+
+    private Board _boardScript;
     private Camera _camera;
-    private Tile _selectedPiece;
+    private Tile _selectedTile;
     private InputState _currentState;
 
-    private void Start()
+    private void Awake()
     {
         _camera = Camera.main;
+        _boardScript = _boardGameObject.GetComponent<Board>();
     }
 
     private void Update()
@@ -56,15 +63,22 @@ public class InputManager : MonoBehaviour
         {
             Vector2 worldPosition = mousePosition;
 
-            Debug.Log(worldPosition);
-
             // Create a raycast to detect the tile game object
             RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
 
             if (hit.collider != null)
             {
                 GameObject tileGameObject = hit.collider.gameObject;
-                tileGameObject.GetComponent<Image>().color = new Color32(155, 0, 0, 255);
+                Image tileImage = tileGameObject.GetComponent<Image>();
+                Tile tileScript = tileGameObject.GetComponent<Tile>();
+                Piece tilePiece = tileScript.GetOccupyingPiece;
+
+                if (tilePiece != null)
+                {
+                    _selectedTile = tileScript;
+                    tileImage.color = selectedTileColor;
+                    _currentState = InputState.PieceSelected;
+                }
             }
         }
     }
@@ -76,11 +90,51 @@ public class InputManager : MonoBehaviour
 
     private void HandlePointAndClickMovement(Vector2 mousePosition)
     {
-        throw new NotImplementedException();
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            Vector2 worldPosition = mousePosition;
+
+            // Create a raycast to detect the tile game object
+            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+
+            if (hit.collider != null)
+            {
+                GameObject tileGameObject = hit.collider.gameObject;
+                Image tileImage = tileGameObject.GetComponent<Image>();
+                Tile tileScript = tileGameObject.GetComponent<Tile>();
+                Piece tilePiece = tileScript.GetOccupyingPiece;
+                Piece selectedTilePiece = _selectedTile.GetOccupyingPiece;
+
+                if (tilePiece == null)
+                {
+                    _boardScript.MovePiece(_selectedTile, tileScript);
+                    CancelPieceSelection();
+                }
+                else if (tilePiece.team != selectedTilePiece.team) 
+                {
+                    _boardScript.MovePiece(_selectedTile, tileScript);
+                    CancelPieceSelection();
+                }
+                else
+                {
+                    CancelPieceSelection();
+                    _selectedTile = tileScript;
+                    tileImage.color = selectedTileColor;
+                    _currentState = InputState.PieceSelected;
+                }
+            }
+        }
     }
 
     private void CancelPieceSelection()
     {
-        
-    }
+        if (_selectedTile == null) return;
+
+        GameObject tileGameObject = _selectedTile.gameObject;
+        Image tileImage = tileGameObject.GetComponent<Image>();
+
+        tileImage.color = _selectedTile.defaultColor;
+        _selectedTile = null;
+        _currentState = InputState.None;
+}
 }

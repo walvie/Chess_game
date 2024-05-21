@@ -43,14 +43,14 @@ public class Pawn : Piece
         // Take diagonally
         moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank - 1];
 
-        if (moveTile.GetOccupyingPiece.GetTeam != _team)
+        if (moveTile.GetOccupyingPiece.team != team)
         {
             _validTilesToMove.Add(moveTile);
         }
 
         moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank + 1];
 
-        if (moveTile.GetOccupyingPiece.GetTeam != _team)
+        if (moveTile.GetOccupyingPiece.team != team)
         {
             _validTilesToMove.Add(moveTile);
         }

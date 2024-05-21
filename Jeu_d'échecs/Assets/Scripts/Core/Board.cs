@@ -37,8 +37,6 @@ public class Board : MonoBehaviour
     private const int XOffset = -450;
     private const int YOffset = -263;
 
-    private const string PiecesTexture = "Graphics/Sprites/Pieces/Texture/Pieces";
-
     private static readonly PieceType[,] _initialBoardPosition = new PieceType[8, 8]
     {
         { PieceType.BlackRook, PieceType.BlackKnight, PieceType.BlackBishop, PieceType.BlackQueen, PieceType.BlackKing, PieceType.BlackBishop, PieceType.BlackKnight, PieceType.BlackRook },
@@ -51,44 +49,9 @@ public class Board : MonoBehaviour
         { PieceType.WhiteRook, PieceType.WhiteKnight, PieceType.WhiteBishop, PieceType.WhiteQueen, PieceType.WhiteKing, PieceType.WhiteBishop, PieceType.WhiteKnight, PieceType.WhiteRook }
     };
 
-    private Dictionary<PieceType, string> pieceSpriteNames = new Dictionary<PieceType, string>
-    {
-        { PieceType.WhitePawn, "PawnW" },
-        { PieceType.BlackPawn, "PawnB" },
-        { PieceType.WhiteKnight, "KnightW" },
-        { PieceType.BlackKnight, "KnightB" },
-        { PieceType.WhiteBishop, "BishopW" },
-        { PieceType.BlackBishop, "BishopB" },
-        { PieceType.WhiteRook, "RookW" },
-        { PieceType.BlackRook, "RookB" },
-        { PieceType.WhiteQueen, "QueenW" },
-        { PieceType.BlackQueen, "QueenB" },
-        { PieceType.WhiteKing, "KingW" },
-        { PieceType.BlackKing, "KingB" }
-    };
-
-    private Dictionary<PieceType, Type> pieceComponentTypes = new Dictionary<PieceType, Type>
-    {
-        { PieceType.WhitePawn, typeof(Pawn) },
-        { PieceType.BlackPawn, typeof(Pawn) },
-        { PieceType.WhiteKnight, typeof(Knight) },
-        { PieceType.BlackKnight, typeof(Knight) },
-        { PieceType.WhiteBishop, typeof(Bishop) },
-        { PieceType.BlackBishop, typeof(Bishop) },
-        { PieceType.WhiteRook, typeof(Rook) },
-        { PieceType.BlackRook, typeof(Rook) },
-        { PieceType.WhiteQueen, typeof(Queen) },
-        { PieceType.BlackQueen, typeof(Queen) },
-        { PieceType.WhiteKing, typeof(King) },
-        { PieceType.BlackKing, typeof(King) }
-    };
-
-    private Dictionary<string, Sprite> _cachedPieceSprites;
-
     private void Start()
     {
         _tiles = new Tile[boardSize, boardSize];
-        _cachedPieceSprites = LoadPieceSprites();
 
         InitializeBoard();
     }
@@ -122,6 +85,7 @@ public class Board : MonoBehaviour
                 // Add tile to the tiles array
                 Tile tileScript = tileObject.GetComponent<Tile>();
                 _tiles[file, rank] = tileScript;
+                tileScript.defaultColor = tileImage.color;
 
                 GameObject tilePieceObject = tileObject.transform.Find("Piece").gameObject;
 
@@ -139,57 +103,25 @@ public class Board : MonoBehaviour
     {
         if (pieceType == PieceType.None) return;
 
-        if (!pieceSpriteNames.TryGetValue(pieceType, out string spriteName))
-        {
-            Debug.LogError($"No sprite name found for {pieceType}");
-            return;
-        }
-
-        if (!_cachedPieceSprites.TryGetValue(spriteName, out Sprite sprite))
-        {
-            Debug.LogError($"No sprite found for {spriteName}");
-            return;
-        }
-
+        Tile pieceTile = pieceObject.transform.parent.gameObject.GetComponent<Tile>();
         Image pieceImage = pieceObject.GetComponent<Image>();
-        pieceImage.sprite = sprite;
+        SpriteManager.Instance.SetImageSprite(pieceType, pieceImage);
 
-        AddPieceScript(pieceObject, pieceType);
+        if (pieceType != PieceType.None)
+        {
+            pieceTile.PlacePiece(pieceType);
+        }
+
         pieceObject.SetActive(true);
     }
 
-    /// <summary>
-    /// Adds the corresponding script of the piece to the gameObject
-    /// </summary>
-    /// <param name="pieceObject">The GameObject representing the piece.</param>
-    /// <param name="pieceType">The type of the piece to initialize.</param>
-    private void AddPieceScript(GameObject pieceObject, PieceType pieceType)
+    public void MovePiece(Tile departureTile, Tile destinationTile)
     {
-        if (pieceComponentTypes.TryGetValue(pieceType, out Type componentType))
-        {
-            pieceObject.AddComponent(componentType);
-        }
-    }
+        PieceType pieceToMove = departureTile.GetOccupyingPiece.pieceType;
 
-    /// <summary>
-    /// Loads all the sprites of the pieces in the dictionary
-    /// </summary>
-    private Dictionary<string, Sprite> LoadPieceSprites()
-    {
-        Sprite[] allPieceSprites = Resources.LoadAll<Sprite>(PiecesTexture);
-        Dictionary<string, Sprite> spriteDictionary = new Dictionary<string, Sprite>();
+        departureTile.RemovePiece();
 
-        foreach (Sprite pieceSprite in allPieceSprites)
-        {
-            spriteDictionary[pieceSprite.name] = pieceSprite;
-        }
-
-        return spriteDictionary;
-    }
-
-    public void PlacePiece(int index, Piece piece)
-    {
-        throw new NotImplementedException();
+        destinationTile.PlacePiece(pieceToMove);
     }
 
     public Tile[,] GetTiles
