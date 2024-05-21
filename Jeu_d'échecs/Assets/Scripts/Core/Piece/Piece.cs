@@ -16,6 +16,11 @@ public abstract class Piece : MonoBehaviour
 
     public abstract List<Tile> GeneratePieceMoves();
 
+    public void ResetGeneratedMoves()
+    {
+        _validTilesToMove = new List<Tile>();
+    }
+
     public List<Tile> GetValidTilesToMoves
     {
         get { return _validTilesToMove; }

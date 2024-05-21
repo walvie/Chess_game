@@ -101,15 +101,20 @@ public class Board : MonoBehaviour
     /// <param name="pieceObject">The GameObject representing the piece.</param>
     private void InitializePiece(PieceType pieceType, GameObject pieceObject)
     {
-        if (pieceType == PieceType.None) return;
-
         Tile pieceTile = pieceObject.transform.parent.gameObject.GetComponent<Tile>();
+
+        if (pieceType == PieceType.None)
+        {
+            pieceTile.RemovePiece();
+            return;
+        }
+
         Image pieceImage = pieceObject.GetComponent<Image>();
         SpriteManager.Instance.SetImageSprite(pieceType, pieceImage);
 
         if (pieceType != PieceType.None)
         {
-            pieceTile.PlacePiece(pieceType);
+            pieceTile.InitializePiece(pieceType);
         }
 
         pieceObject.SetActive(true);
@@ -117,11 +122,24 @@ public class Board : MonoBehaviour
 
     public void MovePiece(Tile departureTile, Tile destinationTile)
     {
-        PieceType pieceToMove = departureTile.OccupyingPiece.pieceType;
+        GameObject pieceObject = departureTile.transform.Find("Piece").gameObject;
+        Piece pieceScript = departureTile.OccupyingPiece;
+        PieceType pieceType = pieceScript.pieceType;
+
+        if (pieceType == PieceType.WhitePawn || pieceType == PieceType.BlackPawn)
+        {
+            Pawn pawn = pieceScript as Pawn;
+
+            pawn.SetPieceHasMoved();
+        }
+
+        destinationTile.RemovePiece();
+
+        destinationTile.PlacePiece(pieceObject);
 
         departureTile.RemovePiece();
 
-        destinationTile.PlacePiece(pieceToMove);
+        pieceScript.ResetGeneratedMoves();
     }
 
     public Tile[,] GetTiles

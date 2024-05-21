@@ -77,6 +77,9 @@ public class InputManager : MonoBehaviour
         _possibleTilesToMove = GeneratePieceMoves(tilePiece);
 
         _currentState = InputState.PieceSelected;
+
+        Debug.Log(tileGameObject);
+        Debug.Log(tilePiece);
     }
 
     private void HandlePointAndClickMovement(Vector2 mousePosition)
@@ -97,13 +100,13 @@ public class InputManager : MonoBehaviour
 
         if (tilePiece == null)
         {
-            _boardScript.MovePiece(_selectedTile, tileScript);
-            CancelPieceSelection();
+            MovePiece(_selectedTile, tileScript);
+            Debug.Log(tileGameObject);
+            Debug.Log(tilePiece);
         }
         else if (tilePiece.Team != selectedTilePiece.Team) 
         {
-            _boardScript.MovePiece(_selectedTile, tileScript);
-            CancelPieceSelection();
+            MovePiece(_selectedTile, tileScript);
         }
         else
         {
@@ -115,6 +118,28 @@ public class InputManager : MonoBehaviour
 
             _currentState = InputState.PieceSelected;
         }
+    }
+
+    private void MovePiece(Tile departureTile, Tile destinationTile) 
+    {
+        List<Tile> listOfDestinationTiles = departureTile.OccupyingPiece.GetValidTilesToMoves;
+
+        bool destinationTileIsValid = false;
+
+        foreach(Tile tile in listOfDestinationTiles)
+        {
+            if (tile == destinationTile)
+            {
+                destinationTileIsValid = true;
+            }
+        }
+
+        if (destinationTileIsValid)
+        {
+            _boardScript.MovePiece(departureTile, destinationTile);
+        }
+
+        CancelPieceSelection();
     }
 
     private void CancelPieceSelection()
@@ -129,7 +154,6 @@ public class InputManager : MonoBehaviour
 
         if (_possibleTilesToMove.Count != 0)
         {
-            Debug.Log("clearing possibles tiles to move");
             foreach(Tile tile in _possibleTilesToMove)
             {
                 tile.ChangeTileColor(tile.DefaultColor);
@@ -143,8 +167,6 @@ public class InputManager : MonoBehaviour
 
     private List<Tile> GeneratePieceMoves(Piece selectedTilePiece)
     {
-        Debug.Log("Adding possibles tiles to move");
-
         List<Tile> possibleTiles = selectedTilePiece.GeneratePieceMoves();
 
         foreach (Tile tile in possibleTiles)

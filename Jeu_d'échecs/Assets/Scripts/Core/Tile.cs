@@ -37,8 +37,24 @@ public class Tile : MonoBehaviour
         set { _defaultColor = value; }
     }
 
-    public Piece PlacePiece(PieceType pieceToPlace)
+    public void PlacePiece(GameObject pieceObject)
     {
+        Piece pieceScript = pieceObject.GetComponent<Piece>();
+        _occupyingPiece = pieceScript;
+
+        pieceObject.transform.SetParent(transform, false);
+    }
+
+    public Piece InitializePiece(PieceType pieceToPlace)
+    {
+        if (pieceToPlace == PieceType.None)
+        {
+            Debug.Log(gameObject.name);
+            RemovePiece();
+
+            return null;
+        }
+
         PieceType occupyingPieceType = pieceToPlace;
         GameObject pieceObject = transform.Find("Piece").gameObject;
         Image pieceImage = pieceObject.GetComponent<Image>();
@@ -86,13 +102,13 @@ public class Tile : MonoBehaviour
     {
         _occupyingPiece = null;
 
-        GameObject pieceObject = transform.Find("Piece").gameObject;
-        Piece pieceScript = pieceObject.GetComponent<Piece>();
-        Image pieceImage = pieceObject.GetComponent<Image>();
+        Transform pieceTransform = transform.Find("Piece");
 
-        pieceImage.sprite = null;
-        Destroy(pieceScript);
-        pieceObject.SetActive(false);
+        Debug.Log(pieceTransform);
+
+        if (pieceTransform == null) return;
+
+        Destroy(pieceTransform.gameObject);
     }
 
     public void ChangeTileColor(Color32 color)

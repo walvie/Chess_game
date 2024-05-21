@@ -20,7 +20,14 @@ public class Pawn : Piece
 
     public override List<Tile> GeneratePieceMoves()
     {
+        (_pieceFile, _pieceRank) = GetPieceTileIndexes();
+
         int moveDirection = 1;
+
+        if (_team == Team.Black)
+        {
+            moveDirection = -1;
+        }
 
         // Move forward
         Tile moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank];
@@ -85,5 +92,10 @@ public class Pawn : Piece
         Board board = transform.parent.parent.GetComponent<Board>();
 
         return board.GetTiles;
+    }
+
+    public void SetPieceHasMoved()
+    {
+        _hasMoved = true;
     }
 }

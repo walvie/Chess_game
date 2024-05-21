@@ -246,7 +246,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectedTileColor:
     serializedVersion: 2
-    rgba: 4284139610
+    rgba: 4286747350
+  possibleTilesToMoveColor:
+    serializedVersion: 2
+    rgba: 4285188720
   _boardGameObject: {fileID: 1098545647}
 --- !u!4 &778423450
 Transform:
