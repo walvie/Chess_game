@@ -23,14 +23,15 @@ public class Queen : Piece
         };
     }
 
-    public override List<Tile> GeneratePieceMoves()
+    public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces)
     {
-        (_pieceFile, _pieceRank) = GetPieceTileIndexes(_gameTiles);
+        (_pieceFile, _pieceRank) = GetPieceIndexes(_gameTiles);
 
         int fileToMove;
         int rankToMove;
 
         Tile moveTile;
+        Piece movePositionPiece;
 
         for (int i = 0; i < _directions.Length; i++)
         {
@@ -47,16 +48,17 @@ public class Queen : Piece
                 fileToMove += direction.Item1 * iterationCount;
                 rankToMove += direction.Item2 * iterationCount;
 
-                if (IsInBoardLimits(fileToMove, rankToMove))
+                if (Board.IsInBoardLimits(fileToMove, rankToMove))
                 {
                     moveTile = _gameTiles[fileToMove, rankToMove];
+                    movePositionPiece = moveTile.OccupyingPiece;
 
-                    if (moveTile.OccupyingPiece == null || moveTile.OccupyingPiece.Team != _team)
+                    if (movePositionPiece == null || movePositionPiece.Team != _team)
                     {
                         _validTilesToMove.Add(moveTile);
                     }
 
-                    if (moveTile.OccupyingPiece != null)
+                    if (movePositionPiece != null)
                     {
                         hasReachedEndOfGeneration = true;
                     }

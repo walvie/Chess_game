@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Pawn : Piece
 {
@@ -20,9 +21,9 @@ public class Pawn : Piece
         };
     }
 
-    public override List<Tile> GeneratePieceMoves()
+    public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces)
     {
-        (_pieceFile, _pieceRank) = GetPieceTileIndexes(_gameTiles);
+        (_pieceFile, _pieceRank) = GetPieceIndexes(_gameTiles);
 
         int moveDirection = _directions[0].Item1;
 
@@ -35,23 +36,26 @@ public class Pawn : Piece
         int rankToMove = _pieceRank;
 
         Tile moveTile;
+        Piece movePositionPiece;
 
         // Move forward
-        if (IsInBoardLimits(fileToMove, rankToMove))
+        if (Board.IsInBoardLimits(fileToMove, rankToMove))
         {
             moveTile = _gameTiles[fileToMove, rankToMove];
+            movePositionPiece = moveTile.OccupyingPiece;
 
-            if (moveTile.OccupyingPiece == null)
+            if (movePositionPiece == null)
             {
                 _validTilesToMove.Add(moveTile);
 
                 fileToMove += moveDirection;
 
-                if (_hasMoved == false && IsInBoardLimits(fileToMove, rankToMove))
+                if (_hasMoved == false && Board.IsInBoardLimits(fileToMove, rankToMove))
                 {
                     moveTile = _gameTiles[fileToMove, rankToMove];
+                    movePositionPiece = moveTile.OccupyingPiece;
 
-                    if (moveTile.OccupyingPiece == null)
+                    if (movePositionPiece == null)
                     {
                         _validTilesToMove.Add(moveTile);
                     }
@@ -63,11 +67,12 @@ public class Pawn : Piece
         rankToMove = _pieceRank + _directions[2].Item2;
 
         // Take diagonally
-        if (IsInBoardLimits(fileToMove, rankToMove))
+        if (Board.IsInBoardLimits(fileToMove, rankToMove))
         {
             moveTile = _gameTiles[fileToMove, rankToMove];
+            movePositionPiece = moveTile.OccupyingPiece;
 
-            if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
+            if (movePositionPiece != null && movePositionPiece.Team != _team)
             {
                 _validTilesToMove.Add(moveTile);
             }
@@ -75,11 +80,12 @@ public class Pawn : Piece
 
         rankToMove = _pieceRank + _directions[3].Item2;
 
-        if (IsInBoardLimits(fileToMove, rankToMove))
+        if (Board.IsInBoardLimits(fileToMove, rankToMove))
         {
             moveTile = _gameTiles[fileToMove, rankToMove];
+            movePositionPiece = moveTile.OccupyingPiece;
 
-            if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
+            if (movePositionPiece != null && movePositionPiece.Team != _team)
             {
                 _validTilesToMove.Add(moveTile);
             }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public enum Team
@@ -15,7 +16,9 @@ public abstract class Piece : MonoBehaviour
     protected Team _team;
     protected List<Tile> _validTilesToMove = new List<Tile>();
 
+    protected Piece[,] _gamePieces;
     protected Tile[,] _gameTiles;
+
     protected int _pieceFile;
     protected int _pieceRank;
     protected int _boardFileLimit;
@@ -25,14 +28,16 @@ public abstract class Piece : MonoBehaviour
 
     protected abstract void InitializeDirections();
 
-    public abstract List<Tile> GeneratePieceMoves();
+    public abstract List<Tile> GeneratePieceMoves(Piece[,] gamePieces);
 
     protected void InitializePieceVariables()
     {
+        _gamePieces = GetBoardPieces();
         _gameTiles = GetBoardTiles();
-        (_pieceFile, _pieceRank) = GetPieceTileIndexes(_gameTiles);
-        _boardFileLimit = _gameTiles.GetLength(0);
-        _boardRankLimit = _gameTiles.GetLength(1);
+
+        (_pieceFile, _pieceRank) = GetPieceIndexes(_gameTiles);
+        _boardFileLimit = Board.boardSize;
+        _boardRankLimit = Board.boardSize;
     }
 
     /// <summary>
@@ -44,30 +49,31 @@ public abstract class Piece : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if the specified file and rank are within the board limits.
+    /// Finds and removes the tile in <c>_validTilesToMove</c> as a possible move for that piece
     /// </summary>
-    /// <param name="fileToMove">The file to move the piece to.</param>
-    /// <param name="rankToMove">The rank to move the piece to.</param>
-    /// <returns>True if the position is within the board limits, false otherwise.</returns>
-    protected bool IsInBoardLimits(int fileToMove, int rankToMove)
+    /// <param name="tile"></param>
+    public void RemoveTileAsValidMove(Tile tile)
     {
-        bool isInBoardLimits = (fileToMove >= 0 && rankToMove >= 0 && fileToMove < _boardFileLimit && rankToMove < _boardRankLimit);
-
-        return isInBoardLimits;
+        foreach (Tile validTile in _validTilesToMove)
+        {
+            if (tile == validTile)
+            {
+                _validTilesToMove.Remove(validTile);
+            }
+        }
     }
 
     /// <summary>
-    /// Finds and returns the indexes (file and rank) of the tile that the current piece is on.
+    /// Finds and returns the indexes (file and rank) of the piece.
     /// </summary>
-    /// <param name="gameTiles">A 2D array of tiles representing the game board.</param>
-    /// <returns>A tuple containing the file and rank of the tile the piece is on.</returns>
-    protected (int, int) GetPieceTileIndexes(Tile[,] gameTiles)
+    /// <param name="gameTiles">A 2D array of the pieces representing the game board.</param>
+    /// <returns>A tuple containing the file and rank of pieces position.</returns>
+    protected (int, int) GetPieceIndexes(Tile[,] gameTiles)
     {
         Tile pieceTile = transform.parent.GetComponent<Tile>();
 
         for (int rank = 0; rank < gameTiles.GetLength(0); rank++)
         {
-            // Iterate over columns
             for (int file = 0; file < gameTiles.GetLength(1); file++)
             {
                 Tile currentTile = gameTiles[file, rank];
@@ -79,7 +85,19 @@ public abstract class Piece : MonoBehaviour
             }
         }
 
-        throw new Exception("Tile not found");
+        throw new Exception("Piece not found");
+    }
+
+    /// <summary>
+    /// Retrieves the pieces of the game board.
+    /// </summary>
+    /// <returns>A 2D array of the pieces representing the game board.</returns>
+    protected Piece[,] GetBoardPieces()
+    {
+        // piece is a child of the tile, which is a child of the board.
+        Board board = transform.parent.parent.GetComponent<Board>();
+
+        return board.GetPieces;
     }
 
     /// <summary>

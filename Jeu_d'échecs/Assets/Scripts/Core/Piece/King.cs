@@ -23,14 +23,15 @@ public class King : Piece
         };
     }
 
-    public override List<Tile> GeneratePieceMoves()
+    public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces)
     {
-        (_pieceFile, _pieceRank) = GetPieceTileIndexes(_gameTiles);
+        (_pieceFile, _pieceRank) = GetPieceIndexes(_gameTiles);
 
         int fileToMove;
         int rankToMove;
 
         Tile moveTile;
+        Piece movePositionPiece;
 
         for (int i = 0; i < _directions.Length; i++)
         {
@@ -42,11 +43,12 @@ public class King : Piece
             fileToMove += direction.Item1;
             rankToMove += direction.Item2;
 
-            if (IsInBoardLimits(fileToMove, rankToMove))
+            if (Board.IsInBoardLimits(fileToMove, rankToMove))
             {
                 moveTile = _gameTiles[fileToMove, rankToMove];
+                movePositionPiece = moveTile.OccupyingPiece;
 
-                if (moveTile.OccupyingPiece == null || moveTile.OccupyingPiece.Team != _team)
+                if (movePositionPiece == null || movePositionPiece.Team != _team)
                 {
                     _validTilesToMove.Add(moveTile);
                 }

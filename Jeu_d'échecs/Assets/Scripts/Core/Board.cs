@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,7 +25,7 @@ public class Board : MonoBehaviour
     public Color32 lightSquareColor = new Color32(238, 216, 192, 255);
 
     [Header("BoardSize")]
-    public int boardSize = 8;
+    public static int boardSize = 8;
 
     [Header("Prefabs")]
     public GameObject tilePrefab;
@@ -37,6 +35,7 @@ public class Board : MonoBehaviour
 
     // Tiles
     private Tile[,] _tiles;
+    private Piece[,] _pieces;
     private const int XOffset = -450;
     private const int YOffset = -263;
 
@@ -55,6 +54,8 @@ public class Board : MonoBehaviour
     private void Start()
     {
         _tiles = new Tile[boardSize, boardSize];
+        _pieces = new Piece[boardSize, boardSize];
+
         _gameManager = GameManager.Instance;
 
         InitializeBoard();
@@ -93,7 +94,7 @@ public class Board : MonoBehaviour
 
                 GameObject tilePieceObject = tileObject.transform.Find("Piece").gameObject;
 
-                InitializePiece(_initialBoardPosition[boardSize - 1 - file, rank], tilePieceObject);
+                _pieces[file, rank] = InitializePiece(_initialBoardPosition[boardSize - 1 - file, rank], tilePieceObject);
             }
         }
     }
@@ -103,14 +104,15 @@ public class Board : MonoBehaviour
     /// </summary>
     /// <param name="pieceType">The type of the piece to initialize.</param>
     /// <param name="pieceObject">The GameObject representing the piece.</param>
-    private void InitializePiece(PieceType pieceType, GameObject pieceObject)
+    /// <returns></returns>
+    private Piece InitializePiece(PieceType pieceType, GameObject pieceObject)
     {
         Tile pieceTile = pieceObject.transform.parent.gameObject.GetComponent<Tile>();
 
         if (pieceType == PieceType.None)
         {
             pieceTile.RemovePiece();
-            return;
+            return null;
         }
 
         Image pieceImage = pieceObject.GetComponent<Image>();
@@ -120,8 +122,12 @@ public class Board : MonoBehaviour
         {
             pieceTile.InitializePiece(pieceType);
         }
+        
+        Piece pieceScript = pieceObject.GetComponent<Piece>();
 
         pieceObject.SetActive(true);
+
+        return pieceScript;
     }
 
     public void MovePiece(Tile departureTile, Tile destinationTile)
@@ -145,13 +151,26 @@ public class Board : MonoBehaviour
         _gameManager.SwitchTurn();
     }
 
+    /// <summary>
+    /// Checks if the specified file and rank are within the board limits.
+    /// </summary>
+    /// <param name="fileToMove">The file to move the piece to.</param>
+    /// <param name="rankToMove">The rank to move the piece to.</param>
+    /// <returns>True if the position is within the board limits, false otherwise.</returns>
+    public static bool IsInBoardLimits(int fileToMove, int rankToMove)
+    {
+        bool isInBoardLimits = (fileToMove >= 0 && rankToMove >= 0 && fileToMove < boardSize && rankToMove < boardSize);
+
+        return isInBoardLimits;
+    }
+
     public Tile[,] GetTiles
     { 
         get { return  _tiles; }
     }
 
-    public Tile GetTile(int file, int rank)
+    public Piece[,] GetPieces
     {
-        return _tiles[file, rank];
+        get { return _pieces; }
     }
 }

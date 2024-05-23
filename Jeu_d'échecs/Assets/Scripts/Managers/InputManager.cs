@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public enum InputState
 {
@@ -168,7 +167,9 @@ public class InputManager : MonoBehaviour
 
     private List<Tile> GeneratePieceMoves(Piece selectedTilePiece)
     {
-        List<Tile> possibleTiles = selectedTilePiece.GeneratePieceMoves();
+        Piece[,] gamePieces = _boardScript.GetPieces;
+
+        List<Tile> possibleTiles = selectedTilePiece.GeneratePieceMoves(gamePieces);
 
         foreach (Tile tile in possibleTiles)
         {
