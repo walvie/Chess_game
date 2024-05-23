@@ -1,24 +1,13 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class Pawn : Piece
 {
     private bool _hasMoved = false;
 
-    private int _pieceFile;
-    private int _pieceRank;
-    private Tile[,] _gameTiles;
-
-    private int _boardFileLimit;
-    private int _boardRankLimit;
-
     private void Awake()
     {
-        _gameTiles = GetBoardTiles();
-        (_pieceFile, _pieceRank) = GetPieceTileIndexes();
-        _boardFileLimit = _gameTiles.GetLength(0);
-        _boardRankLimit = _gameTiles.GetLength(1);
+        InitializePieceVariables();
     }
 
     public override List<Tile> GeneratePieceMoves()
@@ -108,27 +97,6 @@ public class Pawn : Piece
         }
 
         throw new Exception("Tile not found");
-    }
-
-    /// <summary>
-    /// Checks if the specified file and rank are within the board limits.
-    /// </summary>
-    /// <param name="fileToMove">The file to move the piece to.</param>
-    /// <param name="rankToMove">The rank to move the piece to.</param>
-    /// <returns>True if the position is within the board limits, false otherwise.</returns>
-    private bool IsInBoardLimits(int fileToMove, int rankToMove)
-    {
-        bool isInBoardLimits = (fileToMove >= 0 && rankToMove >= 0 && fileToMove < _boardFileLimit && rankToMove < _boardRankLimit);
-
-        return isInBoardLimits;
-    }
-
-    private Tile[,] GetBoardTiles()
-    {
-        // piece is a child of the tile, which is a child of the board.
-        Board board = transform.parent.parent.GetComponent<Board>();
-
-        return board.GetTiles;
     }
 
     public void SetPieceHasMoved()
