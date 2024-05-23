@@ -10,6 +10,8 @@ public enum Team
 
 public abstract class Piece : MonoBehaviour
 {
+    protected (int, int)[] _directions;
+
     protected Team _team;
     protected List<Tile> _validTilesToMove = new List<Tile>();
 
@@ -20,6 +22,8 @@ public abstract class Piece : MonoBehaviour
     protected int _boardRankLimit;
 
     public PieceType pieceType;
+
+    protected abstract void InitializeDirections();
 
     public abstract List<Tile> GeneratePieceMoves();
 

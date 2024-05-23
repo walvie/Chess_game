@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 public class Pawn : Piece
@@ -8,17 +7,28 @@ public class Pawn : Piece
     private void Awake()
     {
         InitializePieceVariables();
+        InitializeDirections();
+    }
+    protected override void InitializeDirections()
+    {
+        _directions = new (int, int)[]
+        {
+            (1, 0),  // Up
+            (-1, 0), // Down
+            (0, 1),  // Right
+            (0, -1)  // Left
+        };
     }
 
     public override List<Tile> GeneratePieceMoves()
     {
-        (_pieceFile, _pieceRank) = GetPieceTileIndexes();
+        (_pieceFile, _pieceRank) = GetPieceTileIndexes(_gameTiles);
 
-        int moveDirection = 1;
+        int moveDirection = _directions[0].Item1;
 
         if (_team == Team.Black)
         {
-            moveDirection = -1;
+            moveDirection = _directions[1].Item1;
         }
 
         int fileToMove = _pieceFile + moveDirection;
@@ -50,7 +60,7 @@ public class Pawn : Piece
         }
 
         fileToMove = _pieceFile + moveDirection;
-        rankToMove = _pieceRank - 1;
+        rankToMove = _pieceRank + _directions[2].Item2;
 
         // Take diagonally
         if (IsInBoardLimits(fileToMove, rankToMove))
@@ -63,7 +73,7 @@ public class Pawn : Piece
             }
         }
 
-        rankToMove = _pieceRank + 1;
+        rankToMove = _pieceRank + _directions[3].Item2;
 
         if (IsInBoardLimits(fileToMove, rankToMove))
         {
@@ -76,27 +86,6 @@ public class Pawn : Piece
         }
 
         return _validTilesToMove;
-    }
-
-    private (int, int) GetPieceTileIndexes()
-    {
-        Tile pieceTile = transform.parent.GetComponent<Tile>();
-
-        for (int rank = 0; rank < _gameTiles.GetLength(0); rank++)
-        {
-            // Iterate over columns
-            for (int file = 0; file < _gameTiles.GetLength(1); file++)
-            {
-                Tile currentTile = _gameTiles[file, rank];
-
-                if (currentTile.Equals(pieceTile))
-                {
-                    return (file, rank);
-                }
-            }
-        }
-
-        throw new Exception("Tile not found");
     }
 
     public void SetPieceHasMoved()

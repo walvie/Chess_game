@@ -2,17 +2,21 @@ using System.Collections.Generic;
 
 public class Rook : Piece
 {
-    private (int, int)[] _directions =
-    {
-        (1, 0),  // Up
-        (-1, 0), // Down
-        (0, 1),  // Right
-        (0, -1)  // Left
-    };
-
     private void Awake()
     {
         InitializePieceVariables();
+        InitializeDirections();
+    }
+
+    protected override void InitializeDirections()
+    {
+        _directions = new (int, int)[]
+        {
+            (1, 0),  // Up
+            (-1, 0), // Down
+            (0, 1),  // Right
+            (0, -1)  // Left
+        };
     }
 
     public override List<Tile> GeneratePieceMoves()

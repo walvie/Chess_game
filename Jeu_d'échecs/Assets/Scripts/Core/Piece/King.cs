@@ -2,21 +2,25 @@ using System.Collections.Generic;
 
 public class King : Piece
 {
-    private (int, int)[] _directions =
-{
-        (1, 0),  // Up
-        (1, 1), // Up right
-        (0, 1), // Right
-        (-1, 1),  // Down right
-        (-1, 0),  // Down
-        (-1, -1),  // Down left
-        (0, -1),  // Left
-        (1, -1)  // Up left
-    };
-
     private void Awake()
     {
         InitializePieceVariables();
+        InitializeDirections();
+    }
+
+    protected override void InitializeDirections()
+    {
+        _directions = new (int, int)[]
+        {
+            (1, 0),  // Up
+            (1, 1), // Up right
+            (0, 1), // Right
+            (-1, 1),  // Down right
+            (-1, 0),  // Down
+            (-1, -1),  // Down left
+            (0, -1),  // Left
+            (1, -1)  // Up left
+        };
     }
 
     public override List<Tile> GeneratePieceMoves()

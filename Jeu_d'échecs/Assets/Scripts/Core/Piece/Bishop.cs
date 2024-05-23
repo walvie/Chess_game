@@ -2,17 +2,21 @@ using System.Collections.Generic;
 
 public class Bishop : Piece
 {
-    private (int, int)[] _directions =
-    {
-        (1, -1),  // Up left
-        (1, 1), // Up right
-        (-1, -1),  // Down left
-        (-1, 1)  // Down right
-    };
-
     private void Awake()
     {
         InitializePieceVariables();
+        InitializeDirections();
+    }
+
+    protected override void InitializeDirections()
+    {
+        _directions = new (int, int)[]
+        {
+            (1, -1),  // Up left
+            (1, 1), // Up right
+            (-1, -1),  // Down left
+            (-1, 1)  // Down right
+        };
     }
 
     public override List<Tile> GeneratePieceMoves()
