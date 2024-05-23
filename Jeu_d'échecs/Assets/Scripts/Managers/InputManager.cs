@@ -17,16 +17,19 @@ public class InputManager : MonoBehaviour
     [SerializeField]
     private GameObject _boardGameObject;
 
+    private GameManager _gameManager;
     private Board _boardScript;
     private Camera _camera;
     private Tile _selectedTile;
     private InputState _currentState;
     private List<Tile> _possibleTilesToMove;
+    private Team _currentTeam;
 
     private void Awake()
     {
         _camera = Camera.main;
         _boardScript = _boardGameObject.GetComponent<Board>();
+        _gameManager = GameManager.Instance;
     }
 
     private void Update()
@@ -70,6 +73,8 @@ public class InputManager : MonoBehaviour
         Piece tilePiece = tileScript.OccupyingPiece;
 
         if (tilePiece == null) return;
+
+        if (tilePiece.Team != _gameManager.GetCurrentTurn) return;
 
         _selectedTile = tileScript;
         tileScript.ChangeTileColor(selectedTileColor);

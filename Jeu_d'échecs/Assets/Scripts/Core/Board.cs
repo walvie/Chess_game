@@ -32,6 +32,9 @@ public class Board : MonoBehaviour
     [Header("Prefabs")]
     public GameObject tilePrefab;
 
+    // Managers
+    private GameManager _gameManager;
+
     // Tiles
     private Tile[,] _tiles;
     private const int XOffset = -450;
@@ -52,6 +55,7 @@ public class Board : MonoBehaviour
     private void Start()
     {
         _tiles = new Tile[boardSize, boardSize];
+        _gameManager = GameManager.Instance;
 
         InitializeBoard();
     }
@@ -134,12 +138,11 @@ public class Board : MonoBehaviour
         }
 
         destinationTile.RemovePiece();
-
         destinationTile.PlacePiece(pieceObject);
-
         departureTile.RemovePiece();
 
         pieceScript.ResetGeneratedMoves();
+        _gameManager.SwitchTurn();
     }
 
     public Tile[,] GetTiles
