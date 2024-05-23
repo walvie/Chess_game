@@ -78,8 +78,6 @@ public class InputManager : MonoBehaviour
 
         _currentState = InputState.PieceSelected;
 
-        Debug.Log(tileGameObject);
-        Debug.Log(tilePiece);
     }
 
     private void HandlePointAndClickMovement(Vector2 mousePosition)
@@ -101,8 +99,6 @@ public class InputManager : MonoBehaviour
         if (tilePiece == null)
         {
             MovePiece(_selectedTile, tileScript);
-            Debug.Log(tileGameObject);
-            Debug.Log(tilePiece);
         }
         else if (tilePiece.Team != selectedTilePiece.Team) 
         {

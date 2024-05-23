@@ -104,8 +104,6 @@ public class Tile : MonoBehaviour
 
         Transform pieceTransform = transform.Find("Piece");
 
-        Debug.Log(pieceTransform);
-
         if (pieceTransform == null) return;
 
         Destroy(pieceTransform.gameObject);

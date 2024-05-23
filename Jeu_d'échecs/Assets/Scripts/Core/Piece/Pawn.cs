@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,13 +8,17 @@ public class Pawn : Piece
 
     private int _pieceFile;
     private int _pieceRank;
-    
     private Tile[,] _gameTiles;
+
+    private int _boardFileLimit;
+    private int _boardRankLimit;
 
     private void Awake()
     {
         _gameTiles = GetBoardTiles();
         (_pieceFile, _pieceRank) = GetPieceTileIndexes();
+        _boardFileLimit = _gameTiles.GetLength(0);
+        _boardRankLimit = _gameTiles.GetLength(1);
     }
 
     public override List<Tile> GeneratePieceMoves()
@@ -29,37 +32,58 @@ public class Pawn : Piece
             moveDirection = -1;
         }
 
+        int fileToMove = _pieceFile + moveDirection;
+        int rankToMove = _pieceRank;
+
+        Tile moveTile;
+
         // Move forward
-        Tile moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank];
-
-        if (moveTile.OccupyingPiece == null )
+        if (IsInBoardLimits(fileToMove, rankToMove))
         {
-            _validTilesToMove.Add(moveTile);
+            moveTile = _gameTiles[fileToMove, rankToMove];
 
-            if (_hasMoved == false)
+            if (moveTile.OccupyingPiece == null)
             {
-                moveTile = _gameTiles[_pieceFile + moveDirection * 2, _pieceRank];
+                _validTilesToMove.Add(moveTile);
 
-                if (moveTile.OccupyingPiece == null)
+                fileToMove += moveDirection;
+
+                if (_hasMoved == false && IsInBoardLimits(fileToMove, rankToMove))
                 {
-                    _validTilesToMove.Add(moveTile);
+                    moveTile = _gameTiles[fileToMove, rankToMove];
+
+                    if (moveTile.OccupyingPiece == null)
+                    {
+                        _validTilesToMove.Add(moveTile);
+                    }
                 }
             }
         }
 
-        // Take diagonally
-        moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank - 1];
+        fileToMove = _pieceFile + moveDirection;
+        rankToMove = _pieceRank - 1;
 
-        if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
+        // Take diagonally
+        if (IsInBoardLimits(fileToMove, rankToMove))
         {
-            _validTilesToMove.Add(moveTile);
+            moveTile = _gameTiles[fileToMove, rankToMove];
+
+            if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
+            {
+                _validTilesToMove.Add(moveTile);
+            }
         }
 
-        moveTile = _gameTiles[_pieceFile + moveDirection, _pieceRank + 1];
+        rankToMove = _pieceRank + 1;
 
-        if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
+        if (IsInBoardLimits(fileToMove, rankToMove))
         {
-            _validTilesToMove.Add(moveTile);
+            moveTile = _gameTiles[fileToMove, rankToMove];
+
+            if (moveTile.OccupyingPiece != null && moveTile.OccupyingPiece.Team != _team)
+            {
+                _validTilesToMove.Add(moveTile);
+            }
         }
 
         return _validTilesToMove;
@@ -77,13 +101,26 @@ public class Pawn : Piece
                 Tile currentTile = _gameTiles[file, rank];
 
                 if (currentTile.Equals(pieceTile))
-                { 
+                {
                     return (file, rank);
                 }
             }
         }
 
         throw new Exception("Tile not found");
+    }
+
+    /// <summary>
+    /// Checks if the specified file and rank are within the board limits.
+    /// </summary>
+    /// <param name="fileToMove">The file to move the piece to.</param>
+    /// <param name="rankToMove">The rank to move the piece to.</param>
+    /// <returns>True if the position is within the board limits, false otherwise.</returns>
+    private bool IsInBoardLimits(int fileToMove, int rankToMove)
+    {
+        bool isInBoardLimits = (fileToMove >= 0 && rankToMove >= 0 && fileToMove < _boardFileLimit && rankToMove < _boardRankLimit);
+
+        return isInBoardLimits;
     }
 
     private Tile[,] GetBoardTiles()
