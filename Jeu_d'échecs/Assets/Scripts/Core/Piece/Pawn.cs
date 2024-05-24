@@ -21,9 +21,9 @@ public class Pawn : Piece
         };
     }
 
-    public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces)
+    public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces, bool validateMoves)
     {
-        (_pieceFile, _pieceRank) = GetPieceIndexes(_gameTiles);
+        (_pieceFile, _pieceRank) = GetPieceIndexesFromPieces(gamePieces);
 
         int moveDirection = _directions[0].Item1;
 
@@ -38,11 +38,13 @@ public class Pawn : Piece
         Tile moveTile;
         Piece movePositionPiece;
 
+        this.ResetGeneratedMoves();
+
         // Move forward
         if (Board.IsInBoardLimits(fileToMove, rankToMove))
         {
+            movePositionPiece = gamePieces[fileToMove, rankToMove];
             moveTile = _gameTiles[fileToMove, rankToMove];
-            movePositionPiece = moveTile.OccupyingPiece;
 
             if (movePositionPiece == null)
             {
@@ -52,8 +54,8 @@ public class Pawn : Piece
 
                 if (_hasMoved == false && Board.IsInBoardLimits(fileToMove, rankToMove))
                 {
+                    movePositionPiece = gamePieces[fileToMove, rankToMove];
                     moveTile = _gameTiles[fileToMove, rankToMove];
-                    movePositionPiece = moveTile.OccupyingPiece;
 
                     if (movePositionPiece == null)
                     {
@@ -69,8 +71,8 @@ public class Pawn : Piece
         // Take diagonally
         if (Board.IsInBoardLimits(fileToMove, rankToMove))
         {
+            movePositionPiece = gamePieces[fileToMove, rankToMove];
             moveTile = _gameTiles[fileToMove, rankToMove];
-            movePositionPiece = moveTile.OccupyingPiece;
 
             if (movePositionPiece != null && movePositionPiece.Team != _team)
             {
@@ -82,13 +84,18 @@ public class Pawn : Piece
 
         if (Board.IsInBoardLimits(fileToMove, rankToMove))
         {
+            movePositionPiece = gamePieces[fileToMove, rankToMove];
             moveTile = _gameTiles[fileToMove, rankToMove];
-            movePositionPiece = moveTile.OccupyingPiece;
 
             if (movePositionPiece != null && movePositionPiece.Team != _team)
             {
                 _validTilesToMove.Add(moveTile);
             }
+        }
+
+        if (validateMoves)
+        {
+            _moveValidatorManager.ValidateMoves(this);
         }
 
         return _validTilesToMove;

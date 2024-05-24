@@ -1,49 +1,95 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class MoveValidatorManager : MonoBehaviour
 {
     private GameManager _gameManager;
+    private Board _board;
+    private static MoveValidatorManager _instance;
+    private List<Tile> reusableTileList = new List<Tile>();
+    private Tile _piecePreviousPosition;
+    private Tile _pieceNextPosition;
+    private Piece _pieceToMove;
+
+    public static MoveValidatorManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<MoveValidatorManager>();
+
+                if (_instance == null)
+                {
+                    GameObject moveValidatorManagerObject = new GameObject("MoveValidatorManager");
+                    _instance = moveValidatorManagerObject.AddComponent<MoveValidatorManager>();
+                }
+            }
+            return _instance;
+        }
+    }
 
     private void Awake()
     {
         _gameManager = GameManager.Instance;
+        _board = Board.Instance;
     }
 
-    public bool ValidatePosition(Piece[,] boardPieces, Piece pieceToProtect)
+    public bool ValidatePosition(Piece[,] boardPieces)
     {
-        foreach (var piece in boardPieces)
-        {
-            if (piece.Team != pieceToProtect.Team)
-            {
-                List<Tile> pieceMoves = piece.GeneratePieceMoves(boardPieces);
+        PieceType kingType = (_gameManager.GetCurrentTurn == Team.White) ? PieceType.WhiteKing : PieceType.BlackKing;
 
-                foreach (Tile tileToMove in pieceMoves)
+        Piece currentTeamKing = FindKing(boardPieces, kingType);
+
+        if (currentTeamKing == null)
+        {
+            throw new Exception("Could not find teams king");
+        }
+
+        // Iterate over all of the current teams pieces
+        foreach (Piece piece in boardPieces)
+        {
+            if (piece != null && piece.Team != currentTeamKing.Team)
+            {
+                // Get pieces possible moves
+                reusableTileList.Clear();
+                reusableTileList.AddRange(piece.GeneratePieceMoves(boardPieces, false));
+
+                // Check if king is still in check
+                foreach (Tile tileToMove in reusableTileList)
                 {
-                    if (tileToMove.OccupyingPiece == pieceToProtect)
+                    int[] tileIndexes = Tile.TilePositionToIndexes(tileToMove);
+
+                    int file = tileIndexes[0];
+                    int rank = tileIndexes[1];
+
+                    if (boardPieces[file, rank] == currentTeamKing)
                     {
+                        reusableTileList.Clear();
                         return false;
                     }
                 }
             }
         }
 
+        reusableTileList.Clear();
         return true;
     }
 
     public bool ValidateMoves(Piece pieceToMove)
     {
-        Tile[,] boardTiles = GetBoardTiles();
-        Piece[,] boardPieces = GetPieceArray(boardTiles);
+        Tile[,] boardTiles = _board.GetTiles;
+        Piece[,] boardPieces = _board.GetPieces;
         List<Tile> pieceMoves = pieceToMove.GetValidTilesToMoves;
         Tile pieceCurrentTile = pieceToMove.transform.parent.GetComponent<Tile>();
 
-        string currentTilePosition = pieceCurrentTile.name;
+        _pieceToMove = pieceToMove;
 
-        int[] pieceOriginalIndexes = TilePositionToIndexes(currentTilePosition);
+        List<Tile> movesToRemove = new List<Tile>();
+
+        int[] pieceOriginalIndexes = Tile.TilePositionToIndexes(pieceCurrentTile);
 
         int originalFile = pieceOriginalIndexes[0];
         int originalRank = pieceOriginalIndexes[1];
@@ -52,25 +98,21 @@ public class MoveValidatorManager : MonoBehaviour
         {
             bool positionIsValid = false;
 
-            string pieceNewPosition = move.name;
-
-            int[] pieceNewIndexes = TilePositionToIndexes(pieceNewPosition);
+            int[] pieceNewIndexes = Tile.TilePositionToIndexes(move);
 
             int newFile = pieceNewIndexes[0];
             int newRank = pieceNewIndexes[1];
 
-            Debug.Log(boardPieces);
-
             if (Board.IsInBoardLimits(newFile, newRank))
             {
+                _piecePreviousPosition = pieceCurrentTile;
+
                 boardPieces[originalFile, originalRank] = null;
                 boardPieces[newFile, newRank] = pieceToMove;
 
-                PieceType typeOfPieceToProtect = (_gameManager.GetCurrentTurn ==  Team.White) ? PieceType.WhiteKing : PieceType.BlackKing;
+                _pieceNextPosition = boardTiles[newFile, newRank];
 
-                Piece pieceToProtect = FindPiece(typeOfPieceToProtect, boardPieces);
-
-                positionIsValid = ValidatePosition(boardPieces, pieceToProtect);
+                positionIsValid = ValidatePosition(boardPieces);
             }
             else
             {
@@ -79,18 +121,22 @@ public class MoveValidatorManager : MonoBehaviour
 
             if (!positionIsValid)
             {
-                pieceToMove.RemoveTileAsValidMove(move);
+                movesToRemove.Add(move);
             }
+
+            boardPieces = _board.GetPieces;
         }
+
+        RemoveInvalidMoves(movesToRemove, pieceToMove);
 
         return true;
     }
 
-    private Piece FindPiece(PieceType pieceToFind, Piece[,] pieceList)
+    private Piece FindKing(Piece[,] boardPieces, PieceType kingTeam)
     {
-        foreach (Piece piece in pieceList)
+        foreach (Piece piece in boardPieces)
         {
-            if (piece.pieceType == pieceToFind)
+            if (piece != null && piece.pieceType == kingTeam)
             {
                 return piece;
             }
@@ -99,39 +145,11 @@ public class MoveValidatorManager : MonoBehaviour
         return null;
     }
 
-    private Tile[,] GetBoardTiles()
+    private void RemoveInvalidMoves(List<Tile> movesToRemove, Piece pieceToRemoveMoves)
     {
-        // piece is a child of the tile, which is a child of the board.
-        Board board = transform.parent.parent.GetComponent<Board>();
-
-        return board.GetTiles;
-    }
-
-    /// <summary>
-    /// Converts a tile position in algebraic notation (e.g., "c6") to its corresponding indexes on the board.
-    /// </summary>
-    /// <param name="tilePosition"></param>
-    /// <returns>An array containing the file index (horizontal) and the rank index (vertical).</returns>
-    private int[] TilePositionToIndexes(string tilePosition)
-    {
-        int file = tilePosition[0] - 'a';
-
-        int rank = int.Parse(tilePosition[1].ToString()) - 1;
-
-        return new int[] { file, rank };
-    }
-
-    private Piece[,] GetPieceArray(Tile[,] boardTiles)
-    {
-        int boardSize = Board.boardSize;
-        Piece[,] boardPieces = new Piece[boardSize, boardSize];
-        for (int x = 0; x < boardSize; x++)
+        foreach (Tile tile in movesToRemove)
         {
-            for (int y = 0; y < boardSize; y++)
-            {
-                boardPieces[x, y] = boardTiles[x, y].OccupyingPiece;
-            }
+            pieceToRemoveMoves.RemoveTileAsValidMove(tile);
         }
-        return boardPieces;
     }
 }

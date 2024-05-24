@@ -85,7 +85,7 @@ public class Tile : MonoBehaviour
             pieceObject.AddComponent(componentType);
 
             Piece pieceScript = pieceObject.GetComponent<Piece>();
-            
+
             pieceScript.pieceType = pieceType;
 
             pieceScript.Team = (((int)pieceType) < 7) ? Team.White : Team.Black;
@@ -96,6 +96,21 @@ public class Tile : MonoBehaviour
         Debug.LogError($"Invalid piece type: {pieceType}");
 
         return null;
+    }
+
+    /// <summary>
+    /// Converts a tile position in algebraic notation (e.g., "c6") to its corresponding indexes on the board.
+    /// </summary>
+    /// <param name="tilePosition"></param>
+    /// <returns>An array containing the file index (horizontal) and the rank index (vertical).</returns>
+    public static int[] TilePositionToIndexes(Tile tile)
+    {
+        string tileName = tile.name;
+
+        int rank = tileName[0] - 'a';
+        int file = int.Parse(tileName[1].ToString()) - 1;
+
+        return new int[] { file, rank };
     }
 
     public void RemovePiece()

@@ -27,7 +27,7 @@ public class InputManager : MonoBehaviour
     private void Awake()
     {
         _camera = Camera.main;
-        _boardScript = _boardGameObject.GetComponent<Board>();
+        _boardScript = Board.Instance;
         _gameManager = GameManager.Instance;
     }
 
@@ -104,7 +104,7 @@ public class InputManager : MonoBehaviour
         {
             MovePiece(_selectedTile, tileScript);
         }
-        else if (tilePiece.Team != selectedTilePiece.Team) 
+        else if (tilePiece.Team != selectedTilePiece.Team)
         {
             MovePiece(_selectedTile, tileScript);
         }
@@ -120,13 +120,13 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    private void MovePiece(Tile departureTile, Tile destinationTile) 
+    private void MovePiece(Tile departureTile, Tile destinationTile)
     {
         List<Tile> listOfDestinationTiles = departureTile.OccupyingPiece.GetValidTilesToMoves;
 
         bool destinationTileIsValid = false;
 
-        foreach(Tile tile in listOfDestinationTiles)
+        foreach (Tile tile in listOfDestinationTiles)
         {
             if (tile == destinationTile)
             {
@@ -154,12 +154,12 @@ public class InputManager : MonoBehaviour
 
         if (_possibleTilesToMove.Count != 0)
         {
-            foreach(Tile tile in _possibleTilesToMove)
+            foreach (Tile tile in _possibleTilesToMove)
             {
                 tile.ChangeTileColor(tile.DefaultColor);
             }
 
-            _possibleTilesToMove = new List<Tile>();
+            _possibleTilesToMove.Clear();
         }
 
         _currentState = InputState.None;
@@ -169,7 +169,7 @@ public class InputManager : MonoBehaviour
     {
         Piece[,] gamePieces = _boardScript.GetPieces;
 
-        List<Tile> possibleTiles = selectedTilePiece.GeneratePieceMoves(gamePieces);
+        List<Tile> possibleTiles = new List<Tile>(selectedTilePiece.GeneratePieceMoves(gamePieces, true));
 
         foreach (Tile tile in possibleTiles)
         {

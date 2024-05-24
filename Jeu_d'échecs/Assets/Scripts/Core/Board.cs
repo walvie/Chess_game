@@ -51,6 +51,26 @@ public class Board : MonoBehaviour
         { PieceType.WhiteRook, PieceType.WhiteKnight, PieceType.WhiteBishop, PieceType.WhiteQueen, PieceType.WhiteKing, PieceType.WhiteBishop, PieceType.WhiteKnight, PieceType.WhiteRook }
     };
 
+    private static Board _instance;
+
+    public static Board Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<Board>();
+
+                if (_instance == null)
+                {
+                    GameObject boardObject = new GameObject("Board");
+                    _instance = boardObject.AddComponent<Board>();
+                }
+            }
+            return _instance;
+        }
+    }
+
     private void Start()
     {
         _tiles = new Tile[boardSize, boardSize];
@@ -91,12 +111,10 @@ public class Board : MonoBehaviour
                 Tile tileScript = tileObject.GetComponent<Tile>();
                 _tiles[file, rank] = tileScript;
                 tileScript.DefaultColor = tileImage.color;
-
-                GameObject tilePieceObject = tileObject.transform.Find("Piece").gameObject;
-
-                _pieces[file, rank] = InitializePiece(_initialBoardPosition[boardSize - 1 - file, rank], tilePieceObject);
             }
         }
+
+        InitializePiece();
     }
 
     /// <summary>
@@ -105,29 +123,38 @@ public class Board : MonoBehaviour
     /// <param name="pieceType">The type of the piece to initialize.</param>
     /// <param name="pieceObject">The GameObject representing the piece.</param>
     /// <returns></returns>
-    private Piece InitializePiece(PieceType pieceType, GameObject pieceObject)
+    private void InitializePiece()
     {
-        Tile pieceTile = pieceObject.transform.parent.gameObject.GetComponent<Tile>();
-
-        if (pieceType == PieceType.None)
+        for (int rank = 0; rank < boardSize; rank++)
         {
-            pieceTile.RemovePiece();
-            return null;
+            for (int file = 0; file < boardSize; file++)
+            {
+                Tile pieceTile = _tiles[file, rank];
+                GameObject pieceObject = pieceTile.transform.Find("Piece").gameObject;
+
+                // Reverses the array to correspond with how the tiles are generated
+                PieceType pieceType = _initialBoardPosition[boardSize - 1 - file, rank];
+
+                if (pieceType == PieceType.None)
+                {
+                    pieceTile.RemovePiece();
+                }
+                else
+                {
+                    Image pieceImage = pieceObject.GetComponent<Image>();
+                    SpriteManager.Instance.SetImageSprite(pieceType, pieceImage);
+
+                    if (pieceType != PieceType.None)
+                    {
+                        pieceTile.InitializePiece(pieceType);
+                    }
+
+                    Piece pieceScript = pieceObject.GetComponent<Piece>();
+
+                    pieceObject.SetActive(true);
+                }
+            }
         }
-
-        Image pieceImage = pieceObject.GetComponent<Image>();
-        SpriteManager.Instance.SetImageSprite(pieceType, pieceImage);
-
-        if (pieceType != PieceType.None)
-        {
-            pieceTile.InitializePiece(pieceType);
-        }
-        
-        Piece pieceScript = pieceObject.GetComponent<Piece>();
-
-        pieceObject.SetActive(true);
-
-        return pieceScript;
     }
 
     public void MovePiece(Tile departureTile, Tile destinationTile)
@@ -149,6 +176,7 @@ public class Board : MonoBehaviour
 
         pieceScript.ResetGeneratedMoves();
         _gameManager.SwitchTurn();
+        updatePiecesList();
     }
 
     /// <summary>
@@ -164,13 +192,33 @@ public class Board : MonoBehaviour
         return isInBoardLimits;
     }
 
+    private void updatePiecesList()
+    {
+        for (int rank = 0; rank < boardSize; rank++)
+        {
+            for (int file = 0; file < boardSize; file++)
+            {
+                Tile tile = _tiles[file, rank];
+
+                Piece piece = tile.OccupyingPiece;
+
+                _pieces[file, rank] = piece;
+            }
+        }
+    }
+
     public Tile[,] GetTiles
-    { 
-        get { return  _tiles; }
+    {
+        get { return _tiles; }
     }
 
     public Piece[,] GetPieces
     {
-        get { return _pieces; }
+        get
+        {
+            updatePiecesList();
+
+            return _pieces;
+        }
     }
 }

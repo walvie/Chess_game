@@ -23,15 +23,17 @@ public class King : Piece
         };
     }
 
-    public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces)
+    public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces, bool validateMoves)
     {
-        (_pieceFile, _pieceRank) = GetPieceIndexes(_gameTiles);
+        (_pieceFile, _pieceRank) = GetPieceIndexesFromPieces(gamePieces);
 
         int fileToMove;
         int rankToMove;
 
         Tile moveTile;
         Piece movePositionPiece;
+
+        this.ResetGeneratedMoves();
 
         for (int i = 0; i < _directions.Length; i++)
         {
@@ -45,14 +47,19 @@ public class King : Piece
 
             if (Board.IsInBoardLimits(fileToMove, rankToMove))
             {
+                movePositionPiece = gamePieces[fileToMove, rankToMove];
                 moveTile = _gameTiles[fileToMove, rankToMove];
-                movePositionPiece = moveTile.OccupyingPiece;
 
                 if (movePositionPiece == null || movePositionPiece.Team != _team)
                 {
                     _validTilesToMove.Add(moveTile);
                 }
             }
+        }
+
+        if (validateMoves)
+        {
+            _moveValidatorManager.ValidateMoves(this);
         }
 
         return _validTilesToMove;

@@ -43,6 +43,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        _board = Board.Instance;
+    }
+
     public void StartGame()
     {
         throw new NotImplementedException();

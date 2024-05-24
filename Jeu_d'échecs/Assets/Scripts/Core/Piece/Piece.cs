@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public enum Team
@@ -24,20 +23,24 @@ public abstract class Piece : MonoBehaviour
     protected int _boardFileLimit;
     protected int _boardRankLimit;
 
+    protected MoveValidatorManager _moveValidatorManager;
+    protected Board _board;
+
     public PieceType pieceType;
 
     protected abstract void InitializeDirections();
 
-    public abstract List<Tile> GeneratePieceMoves(Piece[,] gamePieces);
+    public abstract List<Tile> GeneratePieceMoves(Piece[,] gamePieces, bool validateMoves);
 
     protected void InitializePieceVariables()
     {
-        _gamePieces = GetBoardPieces();
-        _gameTiles = GetBoardTiles();
+        _board = Board.Instance;
+        _gameTiles = _board.GetTiles;
 
-        (_pieceFile, _pieceRank) = GetPieceIndexes(_gameTiles);
+        (_pieceFile, _pieceRank) = GetPieceIndexesFromTiles(_gameTiles);
         _boardFileLimit = Board.boardSize;
         _boardRankLimit = Board.boardSize;
+        _moveValidatorManager = MoveValidatorManager.Instance;
     }
 
     /// <summary>
@@ -54,11 +57,12 @@ public abstract class Piece : MonoBehaviour
     /// <param name="tile"></param>
     public void RemoveTileAsValidMove(Tile tile)
     {
-        foreach (Tile validTile in _validTilesToMove)
+        // Used reverse iteration so that when the list is modified during the iteration, it won't cause errors.
+        for (int i = _validTilesToMove.Count - 1; i >= 0; i--)
         {
-            if (tile == validTile)
+            if (_validTilesToMove[i] == tile)
             {
-                _validTilesToMove.Remove(validTile);
+                _validTilesToMove.RemoveAt(i);
             }
         }
     }
@@ -66,13 +70,13 @@ public abstract class Piece : MonoBehaviour
     /// <summary>
     /// Finds and returns the indexes (file and rank) of the piece.
     /// </summary>
-    /// <param name="gameTiles">A 2D array of the pieces representing the game board.</param>
-    /// <returns>A tuple containing the file and rank of pieces position.</returns>
-    protected (int, int) GetPieceIndexes(Tile[,] gameTiles)
+    /// <param name="gameTiles">A 2D array of the tiles representing the game board.</param>
+    /// <returns>A tuple containing the file and rank of the pieces position according to the list provided.</returns>
+    protected (int, int) GetPieceIndexesFromTiles(Tile[,] gameTiles)
     {
-        Tile pieceTile = transform.parent.GetComponent<Tile>();
+        Tile pieceTile = GetTile(this);
 
-        for (int rank = 0; rank < gameTiles.GetLength(0); rank++)
+        for (int rank = 0; rank < gameTiles.GetLength(0); rank++) 
         {
             for (int file = 0; file < gameTiles.GetLength(1); file++)
             {
@@ -85,31 +89,72 @@ public abstract class Piece : MonoBehaviour
             }
         }
 
+        throw new Exception("Piece tile not found");
+    }
+
+    /// <summary>
+    /// Finds and returns the indexes (file and rank) of the piece from a piece list.
+    /// </summary>
+    /// <param name="gamePieces">A 2D array of the pieces representing the game board.</param>
+    /// <returns>A tuple containing the file and rank of pieces position according to the list provided.</returns>
+    protected (int, int) GetPieceIndexesFromPieces(Piece[,] gamePieces)
+    {
+        Piece piece = this;
+
+        for (int rank = 0; rank < gamePieces.GetLength(0); rank++)
+        {
+            for (int file = 0; file < gamePieces.GetLength(1); file++)
+            {
+                Piece currentPiece = gamePieces[file, rank];
+
+                if (currentPiece != null && currentPiece.Equals(piece))
+                {
+                    return (file, rank);
+                }
+            }
+        }
+
         throw new Exception("Piece not found");
     }
 
     /// <summary>
-    /// Retrieves the pieces of the game board.
+    /// Finds the tile on which the piece is on.
     /// </summary>
-    /// <returns>A 2D array of the pieces representing the game board.</returns>
-    protected Piece[,] GetBoardPieces()
+    /// <param name="piece">The piece to find the tile.</param>
+    /// <returns>The tile on which the piece is on</returns>
+    public static Tile GetTile(Piece piece)
     {
-        // piece is a child of the tile, which is a child of the board.
-        Board board = transform.parent.parent.GetComponent<Board>();
+        if (piece == null)
+        {
+            throw null;
+        }
 
-        return board.GetPieces;
+        Tile pieceTile = piece.transform.parent.GetComponent<Tile>();
+
+        return pieceTile;
     }
 
-    /// <summary>
-    /// Retrieves the tiles of the game board.
-    /// </summary>
-    /// <returns>A 2D array of tiles representing the game board.</returns>
-    protected Tile[,] GetBoardTiles()
+    public static string GetTileNameFromPiece(Piece piece, Piece[,] gamePieces)
     {
-        // piece is a child of the tile, which is a child of the board.
-        Board board = transform.parent.parent.GetComponent<Board>();
+        string position = "a1";
 
-        return board.GetTiles;
+        for (int rank = 0; rank < gamePieces.GetLength(0); rank++)
+        {
+            for (int file = 0; file < gamePieces.GetLength(1); file++)
+            {
+                Piece currentPiece = gamePieces[file, rank];
+
+                if (currentPiece != null && currentPiece.Equals(piece))
+                {
+                    char rankChar = (char)('a' + rank);
+                    string fileString = (file + 1).ToString();
+
+                    position = rankChar + fileString;
+                }
+            }
+        }
+
+        return position;
     }
 
     public List<Tile> GetValidTilesToMoves
