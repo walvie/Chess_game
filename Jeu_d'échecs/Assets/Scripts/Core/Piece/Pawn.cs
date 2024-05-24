@@ -5,6 +5,9 @@ public class Pawn : Piece
 {
     private bool _hasMoved = false;
 
+    private Tile _canTakeEnPassantTile;
+    private Piece _pieceToTakeEnPassant;
+
     private void Awake()
     {
         InitializePieceVariables();
@@ -39,6 +42,11 @@ public class Pawn : Piece
         Piece movePositionPiece;
 
         this.ResetGeneratedMoves();
+
+        if (_canTakeEnPassantTile)
+        {
+            _validTilesToMove.Add(_canTakeEnPassantTile);
+        }
 
         // Move forward
         if (Board.IsInBoardLimits(fileToMove, rankToMove))
@@ -101,8 +109,74 @@ public class Pawn : Piece
         return _validTilesToMove;
     }
 
+    /// <summary>
+    /// Check if there is an en passant move if the pawn has moved forwards two tiles.
+    /// </summary>
+    /// <param name="pawnTileToMove">The tile to check if the pawn has moved forwards two tiles.</param>
+    public void CheckEnPassant(Tile pawnTileToMove)
+    {
+        Tile[,] boardTiles = _board.GetTiles;
+        (_pieceFile, _pieceRank) = GetPieceIndexesFromTiles(boardTiles);
+
+        int moveDirection = (_team == Team.Black) ? _directions[1].Item1 : _directions[0].Item1;
+
+        int fileToMove = _pieceFile + moveDirection * 2;
+        int rankToMove = _pieceRank;
+
+        // If the pawn has moved two tiles forwards, then check for adjacent pawns
+        if (boardTiles[fileToMove, rankToMove].Equals(pawnTileToMove))
+        {
+            Tile enPassantTile = boardTiles[fileToMove - moveDirection, rankToMove];
+            CheckAdjacentPawn(fileToMove, rankToMove + _directions[2].Item2, enPassantTile);
+            CheckAdjacentPawn(fileToMove, rankToMove + _directions[3].Item2, enPassantTile);
+        }
+    }
+
+    /// <summary>
+    /// Check the piece adjacent of the pawn if it is a pawn.
+    /// </summary>
+    /// <param name="file">The file to check if the piece is a pawn</param>
+    /// <param name="rank">The rank to check if the piece is a pawn</param>
+    /// <param name="enPassantTile">The original pawn tile to check the adjacent piece</param>
+    private void CheckAdjacentPawn(int file, int rank, Tile enPassantTile)
+    {
+        Tile adjacentTile = _board.GetTiles[file, rank];
+        Piece adjacentPiece = adjacentTile.OccupyingPiece;
+
+        // If the piece adjacent to the pawn is also a pawn, then define the adjacent pawn being able to take en passant.
+        if (adjacentPiece is Pawn adjacentPawn &&
+            (adjacentPawn.pieceType == PieceType.WhitePawn || adjacentPawn.pieceType == PieceType.BlackPawn))
+        {
+            adjacentPawn.SetEnPassant(enPassantTile, this);
+        }
+    }
+
+    /// <summary>
+    /// Define the pawns variables for en passant.
+    /// </summary>
+    /// <param name="canTakeTile">The tile which the pawn can move to take en passant.</param>
+    /// <param name="pieceToTake">The piece to take if the pawn takes en passant.</param>
+    public void SetEnPassant(Tile canTakeTile, Piece pieceToTake)
+    {
+        _canTakeEnPassantTile = canTakeTile;
+        _pieceToTakeEnPassant = pieceToTake;
+    }
+
+    /// <summary>
+    /// Define that the pawn has already moved, and so can't move forwards twice.
+    /// </summary>
     public void SetPieceHasMoved()
     {
         _hasMoved = true;
+    }
+
+    public Tile GetCanTakeEnPassantTile
+    {
+        get { return _canTakeEnPassantTile; }
+    }
+
+    public Piece GetPieceToTakeEnPassant
+    {
+        get { return _pieceToTakeEnPassant; }
     }
 }

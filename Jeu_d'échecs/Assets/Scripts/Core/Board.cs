@@ -157,26 +157,55 @@ public class Board : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Moves a piece from a departure tile to a destination tile.
+    /// Updates the pieces state, Handling special moves and switching turns.
+    /// </summary>
+    /// <param name="departureTile">The tile that the piece originates from.</param>
+    /// <param name="destinationTile">The tile to move the piece to.</param>
     public void MovePiece(Tile departureTile, Tile destinationTile)
     {
         GameObject pieceObject = departureTile.transform.Find("Piece").gameObject;
         Piece pieceScript = departureTile.OccupyingPiece;
-        PieceType pieceType = pieceScript.pieceType;
 
-        if (pieceType == PieceType.WhitePawn || pieceType == PieceType.BlackPawn)
+        if (pieceScript is Pawn pawn && destinationTile == pawn.GetCanTakeEnPassantTile)
         {
-            Pawn pawn = pieceScript as Pawn;
-
-            pawn.SetPieceHasMoved();
+            HandleEnPassant(pawn);
         }
 
+        Piece.ResetEnPassant(_pieces);
+
+        if (pieceScript is Pawn movingPawn)
+        {
+            movingPawn.SetPieceHasMoved();
+            movingPawn.CheckEnPassant(destinationTile);
+        }
+
+        // Move the piece from the departure tile to the destination tile, taking any piece that is on the destination tile.
         destinationTile.RemovePiece();
         destinationTile.PlacePiece(pieceObject);
         departureTile.RemovePiece();
 
+        // End of turn logic
         pieceScript.ResetGeneratedMoves();
         _gameManager.SwitchTurn();
         updatePiecesList();
+    }
+
+    /// <summary>
+    /// Removes the en passant piece of the pawn.
+    /// </summary>
+    /// <param name="pawn">Pawn to check for en passant capture</param>
+    private void HandleEnPassant(Pawn pawn)
+    {
+        Piece pieceToTakeEnPassant = pawn.GetPieceToTakeEnPassant;
+
+        if (pieceToTakeEnPassant != null)
+        {
+            Tile pieceToTakeEnPassantTile = pieceToTakeEnPassant.transform.parent.GetComponent<Tile>();
+            pieceToTakeEnPassantTile.RemovePiece();
+            updatePiecesList();
+        }
     }
 
     /// <summary>

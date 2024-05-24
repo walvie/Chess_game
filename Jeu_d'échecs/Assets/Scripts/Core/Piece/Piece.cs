@@ -157,6 +157,28 @@ public abstract class Piece : MonoBehaviour
         return position;
     }
 
+    /// <summary>
+    /// Resets all the pawns en passant status.
+    /// </summary>
+    /// <param name="boardPieces">The boards pieces that it should reset the pawns en passant status.</param>
+    public static void ResetEnPassant(Piece[,] boardPieces)
+    {
+        for (int rank = 0; rank < boardPieces.GetLength(0); rank++)
+        {
+            for (int file = 0; file < boardPieces.GetLength(1); file++)
+            {
+                Piece piece = boardPieces[file, rank];
+
+                if (piece != null && (piece.pieceType == PieceType.WhitePawn || piece.pieceType == PieceType.BlackPawn))
+                {
+                    Pawn pawn = piece as Pawn;
+
+                    pawn.SetEnPassant(null, null);
+                }
+            }
+        }
+    }
+
     public List<Tile> GetValidTilesToMoves
     {
         get { return _validTilesToMove; }
