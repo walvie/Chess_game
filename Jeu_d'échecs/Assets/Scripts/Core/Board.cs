@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -125,6 +126,9 @@ public class Board : MonoBehaviour
     /// <returns></returns>
     private void InitializePiece()
     {
+        // To initialize castling rights
+        List<Tile> kingTiles = new List<Tile>();
+
         for (int rank = 0; rank < boardSize; rank++)
         {
             for (int file = 0; file < boardSize; file++)
@@ -149,11 +153,21 @@ public class Board : MonoBehaviour
                         pieceTile.InitializePiece(pieceType);
                     }
 
-                    Piece pieceScript = pieceObject.GetComponent<Piece>();
-
                     pieceObject.SetActive(true);
                 }
+
+                if (pieceType == PieceType.WhiteKing || pieceType == PieceType.BlackKing)
+                {
+                    kingTiles.Add(pieceTile);
+                }
             }
+        }
+
+        foreach (Tile kingTile in kingTiles)
+        {
+            King king = kingTile.OccupyingPiece as King;
+
+            king.InitializeKingRooks();
         }
     }
 

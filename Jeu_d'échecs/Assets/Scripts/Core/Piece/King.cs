@@ -1,7 +1,14 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public class King : Piece
 {
+    private bool _canCastleQueenSide = true;
+    private bool _canCastleKingSide = true;
+
+    private Tile _kingSideRook = null;
+    private Tile _queenSideRook = null;
+
     private void Awake()
     {
         InitializePieceVariables();
@@ -21,6 +28,38 @@ public class King : Piece
             (0, -1),  // Left
             (1, -1)  // Up left
         };
+    }
+
+
+    public void InitializeKingRooks()
+    {
+        Tile[,] boardPieces = _board.GetTiles;
+        Team pieceTeam = Team;
+
+        if (_kingSideRook == null && _queenSideRook == null)
+        {
+            int lastIndex = Board.boardSize - 1;
+
+            if (pieceTeam == Team.White)
+            {
+                Debug.Log("team white");
+                _queenSideRook = boardPieces[0, 0];
+
+                _kingSideRook = boardPieces[0, lastIndex];
+            }
+            else
+            {
+                Debug.Log("team black");
+                _queenSideRook = boardPieces[lastIndex, 0];
+
+                _kingSideRook = boardPieces[lastIndex, lastIndex];
+            }
+        }
+
+        Debug.Log("king: " + Team);
+        Debug.Log("queen rook: " + _queenSideRook);
+        Debug.Log("king rook: " + _kingSideRook);
+
     }
 
     public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces, bool validateMoves)
@@ -63,5 +102,15 @@ public class King : Piece
         }
 
         return _validTilesToMove;
+    }
+
+    public void LoseCastlingRightsKingSide()
+    {
+        _canCastleKingSide = false;
+    }
+
+    public void LoseCastlingRightsQueenSide()
+    {
+        _canCastleQueenSide = false;
     }
 }
