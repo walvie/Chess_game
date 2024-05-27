@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class MoveValidatorManager : MonoBehaviour
@@ -9,10 +8,10 @@ public class MoveValidatorManager : MonoBehaviour
     private Board _board;
     private static MoveValidatorManager _instance;
     private List<Tile> reusableTileList = new List<Tile>();
-    private Tile _piecePreviousPosition;
-    private Tile _pieceNextPosition;
-    private Piece _pieceToMove;
 
+    /// <summary>
+    /// Get the <c>MoveValidatorManager</c> instance, or create if it doesn't exist.
+    /// </summary>
     public static MoveValidatorManager Instance
     {
         get
@@ -37,11 +36,17 @@ public class MoveValidatorManager : MonoBehaviour
         _board = Board.Instance;
     }
 
+    /// <summary>
+    /// Check if the king is in check with the provided position.
+    /// </summary>
+    /// <param name="boardPieces">The pieces array to check if it is valid</param>
+    /// <returns>True if the position is valid, False if it isn't</returns>
+    /// <exception cref="Exception">If the king to check if the position is valid isn't found, then throw an exception</exception>
     public bool ValidatePosition(Piece[,] boardPieces)
     {
         PieceType kingType = (_gameManager.GetCurrentTurn == Team.White) ? PieceType.WhiteKing : PieceType.BlackKing;
 
-        Piece currentTeamKing = FindKing(boardPieces, kingType);
+        King currentTeamKing = Board.FindKing(boardPieces, kingType);
 
         if (currentTeamKing == null)
         {
@@ -78,15 +83,15 @@ public class MoveValidatorManager : MonoBehaviour
         return true;
     }
 
-    public bool ValidateMoves(Piece pieceToMove)
+    /// <summary>
+    /// Validate the generated moves of a piece.
+    /// </summary>
+    /// <param name="pieceToMove">The piece to check the generated moves</param>
+    public void ValidateMoves(Piece pieceToMove)
     {
-        Tile[,] boardTiles = _board.GetTiles;
         Piece[,] boardPieces = _board.GetPieces;
         List<Tile> pieceMoves = pieceToMove.GetValidTilesToMoves;
         Tile pieceCurrentTile = pieceToMove.transform.parent.GetComponent<Tile>();
-
-        _pieceToMove = pieceToMove;
-
         List<Tile> movesToRemove = new List<Tile>();
 
         int[] pieceOriginalIndexes = Tile.TilePositionToIndexes(pieceCurrentTile);
@@ -94,6 +99,7 @@ public class MoveValidatorManager : MonoBehaviour
         int originalFile = pieceOriginalIndexes[0];
         int originalRank = pieceOriginalIndexes[1];
 
+        // Check if the position is valid, if the move was played.
         foreach (Tile move in pieceMoves)
         {
             bool positionIsValid = false;
@@ -103,14 +109,11 @@ public class MoveValidatorManager : MonoBehaviour
             int newFile = pieceNewIndexes[0];
             int newRank = pieceNewIndexes[1];
 
+            // Simulate the piece move and check if valid.
             if (Board.IsInBoardLimits(newFile, newRank))
             {
-                _piecePreviousPosition = pieceCurrentTile;
-
                 boardPieces[originalFile, originalRank] = null;
                 boardPieces[newFile, newRank] = pieceToMove;
-
-                _pieceNextPosition = boardTiles[newFile, newRank];
 
                 positionIsValid = ValidatePosition(boardPieces);
             }
@@ -119,32 +122,24 @@ public class MoveValidatorManager : MonoBehaviour
                 Debug.LogError("Invalid move passed.");
             }
 
+            // if the move isn't valid, add the move to the moves to be removed.
             if (!positionIsValid)
             {
                 movesToRemove.Add(move);
             }
 
+            // Undo the simulated piece move.
             boardPieces = _board.GetPieces;
         }
 
         RemoveInvalidMoves(movesToRemove, pieceToMove);
-
-        return true;
     }
 
-    private Piece FindKing(Piece[,] boardPieces, PieceType kingTeam)
-    {
-        foreach (Piece piece in boardPieces)
-        {
-            if (piece != null && piece.pieceType == kingTeam)
-            {
-                return piece;
-            }
-        }
-
-        return null;
-    }
-
+    /// <summary>
+    /// Remove all the moves of the provided piece of the list provided.
+    /// </summary>
+    /// <param name="movesToRemove">The moves to remove from the piece.</param>
+    /// <param name="pieceToRemoveMoves">The piece to remove the moves from.</param>
     private void RemoveInvalidMoves(List<Tile> movesToRemove, Piece pieceToRemoveMoves)
     {
         foreach (Tile tile in movesToRemove)

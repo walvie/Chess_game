@@ -24,6 +24,9 @@ public class GameManager : MonoBehaviour
 
     private static GameManager _instance;
 
+    /// <summary>
+    /// Get the <c>GameManager</c> instance, or create if it doesn't exist.
+    /// </summary>
     public static GameManager Instance
     {
         get

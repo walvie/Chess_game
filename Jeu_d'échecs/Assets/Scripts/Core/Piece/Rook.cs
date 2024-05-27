@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 public class Rook : Piece
 {
@@ -78,5 +77,14 @@ public class Rook : Piece
         }
 
         return _validTilesToMove;
+    }
+
+    /// <summary>
+    /// Adds the tile on which the rook will move to if the player castles.
+    /// </summary>
+    /// <param name="castlingSquare">The tile to move the rook to.</param>
+    public void AddCastlingSquare(Tile castlingSquare)
+    {
+        _validTilesToMove.Add(castlingSquare);
     }
 }

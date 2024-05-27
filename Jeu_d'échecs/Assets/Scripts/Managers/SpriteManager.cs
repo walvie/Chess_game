@@ -24,6 +24,10 @@ public class SpriteManager : MonoBehaviour
     };
 
     private static SpriteManager _instance;
+
+    /// <summary>
+    /// Get the <c>SpriteManager</c> instance, or create if it doesn't exist.
+    /// </summary>
     public static SpriteManager Instance
     {
         get
@@ -46,6 +50,11 @@ public class SpriteManager : MonoBehaviour
         _cachedPieceSprites = LoadPieceSprites();
     }
 
+    /// <summary>
+    /// Set the sprite of the <c>GameObject</c> according to the <c>pieceType</c>.
+    /// </summary>
+    /// <param name="pieceType">The <c>PieceType</c> to retrieve the sprite from.</param>
+    /// <param name="pieceImage">The sprite to replace the image to.</param>
     public void SetImageSprite(PieceType pieceType, Image pieceImage)
     {
         if (!pieceSpriteNames.TryGetValue(pieceType, out string spriteName))

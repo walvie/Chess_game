@@ -54,6 +54,9 @@ public class Board : MonoBehaviour
 
     private static Board _instance;
 
+    /// <summary>
+    /// Get the <c>Board</c> instance, or create if it doesn't exist.
+    /// </summary>
     public static Board Instance
     {
         get
@@ -115,7 +118,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        InitializePiece();
+        InitializePieces();
     }
 
     /// <summary>
@@ -124,7 +127,7 @@ public class Board : MonoBehaviour
     /// <param name="pieceType">The type of the piece to initialize.</param>
     /// <param name="pieceObject">The GameObject representing the piece.</param>
     /// <returns></returns>
-    private void InitializePiece()
+    private void InitializePieces()
     {
         // To initialize castling rights
         List<Tile> kingTiles = new List<Tile>();
@@ -134,27 +137,11 @@ public class Board : MonoBehaviour
             for (int file = 0; file < boardSize; file++)
             {
                 Tile pieceTile = _tiles[file, rank];
-                GameObject pieceObject = pieceTile.transform.Find("Piece").gameObject;
 
                 // Reverses the array to correspond with how the tiles are generated
                 PieceType pieceType = _initialBoardPosition[boardSize - 1 - file, rank];
 
-                if (pieceType == PieceType.None)
-                {
-                    pieceTile.RemovePiece();
-                }
-                else
-                {
-                    Image pieceImage = pieceObject.GetComponent<Image>();
-                    SpriteManager.Instance.SetImageSprite(pieceType, pieceImage);
-
-                    if (pieceType != PieceType.None)
-                    {
-                        pieceTile.InitializePiece(pieceType);
-                    }
-
-                    pieceObject.SetActive(true);
-                }
+                CreatePiece(pieceTile, pieceType);
 
                 if (pieceType == PieceType.WhiteKing || pieceType == PieceType.BlackKing)
                 {
@@ -163,6 +150,7 @@ public class Board : MonoBehaviour
             }
         }
 
+        // Get the king pieces and initialize the rooks for castling.
         foreach (Tile kingTile in kingTiles)
         {
             King king = kingTile.OccupyingPiece as King;
@@ -172,12 +160,38 @@ public class Board : MonoBehaviour
     }
 
     /// <summary>
+    /// Initialize a single piece on a tile.
+    /// </summary>
+    /// <param name="pieceTile">The tile where the piece will be initialized</param>
+    /// <param name="pieceType">The type of the piece to initialize</param>
+    public void CreatePiece(Tile pieceTile, PieceType pieceType = PieceType.None)
+    {
+        GameObject pieceObject = pieceTile.transform.Find("Piece").gameObject;
+
+        // If the piece type isn't provided, remove the piece, otherwise, initialize the piece on the tile. 
+        if (pieceType == PieceType.None)
+        {
+            pieceTile.RemovePiece();
+        }
+        else
+        {
+            Image pieceImage = pieceObject.GetComponent<Image>();
+            SpriteManager.Instance.SetImageSprite(pieceType, pieceImage);
+
+            pieceTile.InitializePiece(pieceType);
+
+            pieceObject.SetActive(true);
+        }
+    }
+
+    /// <summary>
     /// Moves a piece from a departure tile to a destination tile.
     /// Updates the pieces state, Handling special moves and switching turns.
     /// </summary>
     /// <param name="departureTile">The tile that the piece originates from.</param>
     /// <param name="destinationTile">The tile to move the piece to.</param>
-    public void MovePiece(Tile departureTile, Tile destinationTile)
+    /// <param name="switchTurns">Will the move switch who's turn it is?.</param>
+    public void MovePiece(Tile departureTile, Tile destinationTile, bool switchTurns = true)
     {
         GameObject pieceObject = departureTile.transform.Find("Piece").gameObject;
         Piece pieceScript = departureTile.OccupyingPiece;
@@ -188,22 +202,45 @@ public class Board : MonoBehaviour
         }
 
         Piece.ResetEnPassant(_pieces);
+        bool isPromoting = false;
 
         if (pieceScript is Pawn movingPawn)
         {
             movingPawn.SetPieceHasMoved();
             movingPawn.CheckEnPassant(destinationTile);
+            isPromoting = movingPawn.CheckPromotion(destinationTile);
+        }
+
+        if (pieceScript is King movingKing)
+        {
+            movingKing.CheckIfMoveIsCastling(destinationTile);
+
+            movingKing.LoseCastlingRightsKingSide();
+            movingKing.LoseCastlingRightsQueenSide();
+        }
+
+        if (pieceScript is Rook movingRook)
+        {
+            PieceType kingType = (_gameManager.GetCurrentTurn == Team.White) ? PieceType.WhiteKing : PieceType.BlackKing;
+
+            King king = FindKing(_pieces, kingType);
+
+            king.RookMoved(departureTile);
         }
 
         // Move the piece from the departure tile to the destination tile, taking any piece that is on the destination tile.
         destinationTile.RemovePiece();
-        destinationTile.PlacePiece(pieceObject);
+        destinationTile.PlacePiece(pieceObject, isPromoting);
         departureTile.RemovePiece();
 
         // End of turn logic
         pieceScript.ResetGeneratedMoves();
-        _gameManager.SwitchTurn();
         updatePiecesList();
+
+        if (switchTurns)
+        {
+            _gameManager.SwitchTurn();
+        }
     }
 
     /// <summary>
@@ -235,6 +272,28 @@ public class Board : MonoBehaviour
         return isInBoardLimits;
     }
 
+    /// <summary>
+    /// Find the king of the corresponding type from the provided piece array
+    /// </summary>
+    /// <param name="boardPieces">The pieces to check where the king is</param>
+    /// <param name="kingTeam">The team of the king</param>
+    /// <returns>The king script of the corresponding team</returns>
+    public static King FindKing(Piece[,] boardPieces, PieceType kingTeam)
+    {
+        foreach (Piece piece in boardPieces)
+        {
+            if (piece != null && piece.pieceType == kingTeam)
+            {
+                return piece as King;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Updates the <c>_pieces</c> variable
+    /// </summary>
     private void updatePiecesList()
     {
         for (int rank = 0; rank < boardSize; rank++)
@@ -250,11 +309,17 @@ public class Board : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Get the <c>_tiles</c> array
+    /// </summary>
     public Tile[,] GetTiles
     {
         get { return _tiles; }
     }
 
+    /// <summary>
+    /// Get the <c>_pieces</c> array
+    /// </summary>
     public Piece[,] GetPieces
     {
         get

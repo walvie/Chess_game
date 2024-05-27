@@ -25,52 +25,63 @@ public class Tile : MonoBehaviour
         { PieceType.BlackKing, typeof(King) }
     };
 
-    public Piece OccupyingPiece
-    {
-        get { return _occupyingPiece; }
-        set { _occupyingPiece = value; }
-    }
-
-    public Color DefaultColor
-    {
-        get { return _defaultColor; }
-        set { _defaultColor = value; }
-    }
-
-    public void PlacePiece(GameObject pieceObject)
+    /// <summary>
+    /// Place the provided piece <c>GameObject</c> on the tile.
+    /// </summary>
+    /// <param name="pieceObject">The <c>GameObject</c> to place on the tile.</param>
+    /// <param name="isPromoting">If it is a pawn promoting, find the correct <c>Piece</c> component.</param>
+    public void PlacePiece(GameObject pieceObject, bool isPromoting)
     {
         Piece pieceScript = pieceObject.GetComponent<Piece>();
+
+        if (isPromoting)
+        {
+            Piece[] pieces = pieceObject.GetComponents<Piece>();
+
+            foreach (Piece piece in pieces)
+            {
+                if (piece is Queen queen)
+                {
+                    pieceScript = queen;
+                }
+            }
+        }
+
         _occupyingPiece = pieceScript;
 
         pieceObject.transform.SetParent(transform, false);
     }
 
-    public Piece InitializePiece(PieceType pieceToPlace)
+    /// <summary>
+    /// Initialize the piece on the tile according to the <c>PieceType</c>
+    /// </summary>
+    /// <param name="pieceToPlace">The type of the piece to place</param>
+    public void InitializePiece(PieceType pieceToPlace = PieceType.None)
     {
+        // Remove the game object if no piece type is provided.
         if (pieceToPlace == PieceType.None)
         {
-            Debug.Log(gameObject.name);
             RemovePiece();
 
-            return null;
+            return;
         }
 
         PieceType occupyingPieceType = pieceToPlace;
         GameObject pieceObject = transform.Find("Piece").gameObject;
         Image pieceImage = pieceObject.GetComponent<Image>();
 
-        if (occupyingPieceType != PieceType.None)
-        {
-            SpriteManager.Instance.SetImageSprite(occupyingPieceType, pieceImage);
-        }
+        // Set piece sprite
+        SpriteManager.Instance.SetImageSprite(occupyingPieceType, pieceImage);
 
-        Piece pieceScript = AddPieceScript(pieceObject, occupyingPieceType);
+        // Initialize piece script and tile variables
+        bool hasRemovedScript = RemovePieceScript(pieceObject);
+        Piece pieceScript = AddPieceScript(pieceObject, occupyingPieceType, hasRemovedScript);
 
         pieceObject.SetActive(true);
 
         _occupyingPiece = pieceScript;
 
-        return _occupyingPiece;
+        return;
     }
 
     /// <summary>
@@ -78,7 +89,7 @@ public class Tile : MonoBehaviour
     /// </summary>
     /// <param name="pieceObject">The GameObject representing the piece.</param>
     /// <param name="pieceType">The type of the piece to initialize.</param>
-    private Piece AddPieceScript(GameObject pieceObject, PieceType pieceType)
+    private Piece AddPieceScript(GameObject pieceObject, PieceType pieceType, bool checkForMultipleScripts)
     {
         if (pieceComponentTypes.TryGetValue(pieceType, out Type componentType))
         {
@@ -86,8 +97,23 @@ public class Tile : MonoBehaviour
 
             Piece pieceScript = pieceObject.GetComponent<Piece>();
 
+            // If there are multiple scripts, that mean a pawn has promoted. Get the queen script instead of the pawn one.
+            if (checkForMultipleScripts)
+            {
+                Piece[] pieces = pieceObject.GetComponents<Piece>();
+
+                foreach (Piece piece in pieces)
+                {
+                    if (piece is Queen queen)
+                    {
+                        pieceScript = queen;
+                    }
+                }
+            }
+
             pieceScript.pieceType = pieceType;
 
+            // the first 7 pieceTypes are the white pieces, the others are black.
             pieceScript.Team = (((int)pieceType) < 7) ? Team.White : Team.Black;
 
             return pieceScript;
@@ -96,6 +122,25 @@ public class Tile : MonoBehaviour
         Debug.LogError($"Invalid piece type: {pieceType}");
 
         return null;
+    }
+
+    /// <summary>
+    /// Check for a piece script and delete it if found. This will happen at the end of the frame.
+    /// </summary>
+    /// <param name="pieceObject"></param>
+    /// <returns>If a piece script was removed</returns>
+    private bool RemovePieceScript(GameObject pieceObject)
+    {
+        Piece pieceScript = pieceObject.GetComponent<Piece>();
+
+        if (pieceScript != null)
+        {
+            Destroy(pieceScript);
+
+            return true;
+        }
+        
+        return false;
     }
 
     /// <summary>
@@ -113,6 +158,9 @@ public class Tile : MonoBehaviour
         return new int[] { file, rank };
     }
 
+    /// <summary>
+    /// Remove the piece <c>GameObject</c>
+    /// </summary>
     public void RemovePiece()
     {
         _occupyingPiece = null;
@@ -124,8 +172,32 @@ public class Tile : MonoBehaviour
         Destroy(pieceTransform.gameObject);
     }
 
+    /// <summary>
+    /// Change the tiles current color.
+    /// </summary>
+    /// <param name="color">The color to replace the current tile's color.</param>
     public void ChangeTileColor(Color32 color)
     {
         gameObject.GetComponent<Image>().color = color;
+    }
+
+    /// <summary>
+    /// Get the <c>_occupyingPiece</c> attribute of the tile
+    /// </summary>
+    public Piece OccupyingPiece
+    {
+        get
+        {
+            return _occupyingPiece;
+        }
+    }
+
+    /// <summary>
+    /// Get the <c>_defaultColor</c> of the tile
+    /// </summary>
+    public Color DefaultColor
+    {
+        get { return _defaultColor; }
+        set { _defaultColor = value; }
     }
 }

@@ -71,7 +71,11 @@ public class InputManager : MonoBehaviour
         Tile tileScript = tileGameObject.GetComponent<Tile>();
         Piece tilePiece = tileScript.OccupyingPiece;
 
+        Debug.Log("Piece clicked: " + tilePiece);
+
         if (tilePiece == null) return;
+
+        Debug.Log("Piece clicked team: " + tilePiece.Team);
 
         if (tilePiece.Team != _gameManager.GetCurrentTurn) return;
 

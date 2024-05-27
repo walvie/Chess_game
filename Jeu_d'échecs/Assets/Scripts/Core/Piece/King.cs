@@ -9,6 +9,10 @@ public class King : Piece
     private Tile _kingSideRook = null;
     private Tile _queenSideRook = null;
 
+    private const int KingSideRookTilesAmount = 2;
+    private const int QueenSideRookTilesAmount = 3;
+    private const int KingCastlingDistance = 2;
+
     private void Awake()
     {
         InitializePieceVariables();
@@ -30,7 +34,10 @@ public class King : Piece
         };
     }
 
-
+    /// <summary>
+    /// Initialize the tile on which the rooks of the king is on.
+    /// Used later for the kings castling logic.
+    /// </summary>
     public void InitializeKingRooks()
     {
         Tile[,] boardPieces = _board.GetTiles;
@@ -42,24 +49,17 @@ public class King : Piece
 
             if (pieceTeam == Team.White)
             {
-                Debug.Log("team white");
                 _queenSideRook = boardPieces[0, 0];
 
                 _kingSideRook = boardPieces[0, lastIndex];
             }
             else
             {
-                Debug.Log("team black");
                 _queenSideRook = boardPieces[lastIndex, 0];
 
                 _kingSideRook = boardPieces[lastIndex, lastIndex];
             }
         }
-
-        Debug.Log("king: " + Team);
-        Debug.Log("queen rook: " + _queenSideRook);
-        Debug.Log("king rook: " + _kingSideRook);
-
     }
 
     public override List<Tile> GeneratePieceMoves(Piece[,] gamePieces, bool validateMoves)
@@ -96,6 +96,8 @@ public class King : Piece
             }
         }
 
+        CheckCastleMoves(gamePieces);
+
         if (validateMoves)
         {
             _moveValidatorManager.ValidateMoves(this);
@@ -104,13 +106,174 @@ public class King : Piece
         return _validTilesToMove;
     }
 
+    /// <summary>
+    /// Check if the king can castle on either side.
+    /// </summary>
+    /// <param name="gamePieces">The piece list from which to check if the king can castle</param>
+    private void CheckCastleMoves(Piece[,] gamePieces)
+    {
+        // King side castling
+        if (_canCastleKingSide)
+        {
+            bool canCastle = true;
+
+            // Check if no pieces are between the king and the rook
+            for (int i = 1; i <= KingSideRookTilesAmount; i++)
+            {
+                if (gamePieces[_pieceFile, _pieceRank + i] != null)
+                {
+                    canCastle = false;
+                    break;
+                }
+            }
+
+            // Adds castling as a valid move.
+            if (canCastle)
+            {
+                int rankToMove = _pieceRank + KingCastlingDistance;
+                Tile moveTile = _gameTiles[_pieceFile, rankToMove];
+                Tile rookMoveTile = _gameTiles[_pieceFile, rankToMove - 1];
+                Rook rook = _kingSideRook.OccupyingPiece as Rook;
+
+                _validTilesToMove.Add(moveTile);
+
+                rook.AddCastlingSquare(rookMoveTile);
+            }
+        }
+
+        // Queen side castling
+        if (_canCastleQueenSide)
+        {
+            bool canCastle = true;
+
+            // Check if no pieces are between the king and the rook
+            for (int i = 1; i <= QueenSideRookTilesAmount; i++)
+            {
+                if (gamePieces[_pieceFile, _pieceRank - i] != null)
+                {
+                    canCastle = false;
+                    break;
+                }
+            }
+
+            // Adds castling as a valid move.
+            if (canCastle)
+            {
+                int rankToMove = _pieceRank - KingCastlingDistance;
+                Tile moveTile = _gameTiles[_pieceFile, rankToMove];
+                Tile rookMoveTile = _gameTiles[_pieceFile, rankToMove + 1];
+                Rook rook = _kingSideRook.OccupyingPiece as Rook;
+
+                _validTilesToMove.Add(moveTile);
+
+                rook.AddCastlingSquare(rookMoveTile);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Check if the current move being made is a castle.
+    /// </summary>
+    /// <param name="destinationTile">The tile on which the king is being moved to.</param>
+    public void CheckIfMoveIsCastling(Tile destinationTile)
+    {
+        if (!_canCastleKingSide && !_canCastleQueenSide) return;
+
+        Tile[,] gameTiles = _gameTiles;
+
+        int queenSideRankToMove = _pieceRank - KingCastlingDistance;
+        int kingSideRankToMove = _pieceRank + KingCastlingDistance;
+
+
+        Tile queenSideCastleTile = (Board.IsInBoardLimits(_pieceFile, queenSideRankToMove)) ? gameTiles[_pieceFile, queenSideRankToMove] : null;
+        Tile kingSideCastleTile = (Board.IsInBoardLimits(_pieceFile, kingSideRankToMove)) ? gameTiles[_pieceFile, kingSideRankToMove] : null;
+
+        // If the king is castling, move the rook on the correct tile.
+        if (queenSideCastleTile == destinationTile)
+        {
+            _board.MovePiece(_queenSideRook, _gameTiles[_pieceFile, queenSideRankToMove + 1], false);
+        }
+
+        if (kingSideCastleTile == destinationTile)
+        {
+            _board.MovePiece(_kingSideRook, _gameTiles[_pieceFile, kingSideRankToMove - 1], false);
+        }
+    }
+
+    /// <summary>
+    /// Check if the rook has moved. If it has, then lose the castling rights for that side.
+    /// </summary>
+    /// <param name="rookCurrentTile">The rooks current tile</param>
+    public void RookMoved(Tile rookCurrentTile)
+    {
+        Tile[,] boardPieces = _board.GetTiles;
+
+        bool queenSideRookMoved = false;
+        bool kingSideRookMoved = false;
+
+        Team pieceTeam = Team;
+
+        int lastIndex = Board.boardSize - 1;
+
+        if (pieceTeam == Team.White)
+        {
+            Tile queenSideRookTile = boardPieces[0, 0];
+
+            Tile kingSideRookTile = boardPieces[0, lastIndex];
+
+            if (queenSideRookTile == rookCurrentTile)
+            {
+                queenSideRookMoved = true;
+            }
+
+            if (kingSideRookTile == rookCurrentTile)
+            {
+                kingSideRookMoved = true;
+            }
+        }
+        else
+        {
+            Tile queenSideRookTile = boardPieces[lastIndex, 0];
+
+            Tile kingSideRookTile = boardPieces[lastIndex, lastIndex];
+
+            if (queenSideRookTile == rookCurrentTile)
+            {
+                queenSideRookMoved = true;
+            }
+
+            if (kingSideRookTile == rookCurrentTile)
+            {
+                kingSideRookMoved = true;
+            }
+        }
+
+        if (queenSideRookMoved)
+        {
+            this.LoseCastlingRightsQueenSide();
+        }
+
+        if (kingSideRookMoved)
+        {
+            this.LoseCastlingRightsKingSide();
+        }
+    }
+
+    /// <summary>
+    /// Lose the right to castle king side.
+    /// </summary>
     public void LoseCastlingRightsKingSide()
     {
+        Debug.Log("lost castling rights");
         _canCastleKingSide = false;
     }
 
+    /// <summary>
+    /// Lose the right to castle queen side.
+    /// </summary>
     public void LoseCastlingRightsQueenSide()
     {
+        Debug.Log("lost castling rights");
         _canCastleQueenSide = false;
     }
 }

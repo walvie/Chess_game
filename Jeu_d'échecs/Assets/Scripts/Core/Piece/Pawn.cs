@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Pawn : Piece
 {
@@ -123,7 +124,7 @@ public class Pawn : Piece
         int rankToMove = _pieceRank;
 
         // If the pawn has moved two tiles forwards, then check for adjacent pawns
-        if (boardTiles[fileToMove, rankToMove].Equals(pawnTileToMove))
+        if (Board.IsInBoardLimits(fileToMove, rankToMove) && boardTiles[fileToMove, rankToMove].Equals(pawnTileToMove))
         {
             Tile enPassantTile = boardTiles[fileToMove - moveDirection, rankToMove];
             CheckAdjacentPawn(fileToMove, rankToMove + _directions[2].Item2, enPassantTile);
@@ -139,8 +140,10 @@ public class Pawn : Piece
     /// <param name="enPassantTile">The original pawn tile to check the adjacent piece</param>
     private void CheckAdjacentPawn(int file, int rank, Tile enPassantTile)
     {
-        Tile adjacentTile = _board.GetTiles[file, rank];
-        Piece adjacentPiece = adjacentTile.OccupyingPiece;
+        Tile adjacentTile = (Board.IsInBoardLimits(file, rank)) ? _board.GetTiles[file, rank] : null;
+        Piece adjacentPiece = (adjacentTile) ? adjacentTile.OccupyingPiece : null;
+
+        if (adjacentPiece == null) return;
 
         // If the piece adjacent to the pawn is also a pawn, then define the adjacent pawn being able to take en passant.
         if (adjacentPiece is Pawn adjacentPawn &&
@@ -169,11 +172,57 @@ public class Pawn : Piece
         _hasMoved = true;
     }
 
+    /// <summary>
+    /// Check if the pawn needs to promote.
+    /// </summary>
+    /// <param name="destinationTile">The tile to which the pawn will move to.</param>
+    /// <returns>True if the pawn will promote, false otherwise.</returns>
+    public bool CheckPromotion(Tile destinationTile)
+    {
+        int[] destinationTileIndexes = Tile.TilePositionToIndexes(destinationTile);
+
+        int destinationFileIndex = destinationTileIndexes[0];
+
+        bool pawnPromotion = false;
+
+        // check if pawn has reached the end of the board. You don't need to check which direction since the pawn can't move backwards.
+        if (destinationFileIndex == 0 || destinationFileIndex == Board.boardSize - 1)
+        {
+            pawnPromotion = true;
+        }
+
+        if (pawnPromotion)
+        {
+            this.Promote();
+        }
+
+        return pawnPromotion;
+    }
+
+    /// <summary>
+    /// Promote the pawn to a queen.
+    /// </summary>
+    private void Promote()
+    {
+        Tile pawnTile = transform.parent.GetComponent<Tile>();
+        PieceType pawnType = pieceType;
+
+        PieceType queenType = (pawnType == PieceType.WhitePawn) ? PieceType.WhiteQueen : PieceType.BlackQueen;
+
+        _board.CreatePiece(pawnTile, queenType);
+    }
+
+    /// <summary>
+    /// Retrieve the <c>_canTakeEnPassantTile</c> varible.
+    /// </summary>
     public Tile GetCanTakeEnPassantTile
     {
         get { return _canTakeEnPassantTile; }
     }
 
+    /// <summary>
+    /// Retrieve the <c>_pieceToTakeEnPassant</c> varible.
+    /// </summary>
     public Piece GetPieceToTakeEnPassant
     {
         get { return _pieceToTakeEnPassant; }
