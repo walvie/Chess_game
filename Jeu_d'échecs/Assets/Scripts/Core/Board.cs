@@ -219,7 +219,7 @@ public class Board : MonoBehaviour
             movingKing.LoseCastlingRightsQueenSide();
         }
 
-        if (pieceScript is Rook movingRook)
+        if (pieceScript is Rook)
         {
             PieceType kingType = (_gameManager.GetCurrentTurn == Team.White) ? PieceType.WhiteKing : PieceType.BlackKing;
 
