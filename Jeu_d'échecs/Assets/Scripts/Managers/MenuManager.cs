@@ -1,6 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
@@ -27,13 +27,18 @@ public class MenuManager : MonoBehaviour
         Application.Quit();
     }
 
+    public void StartGame()
+    {
+        SceneManager.LoadScene("Game");
+    }
+
     public void StartLongGame()
     {
-
+        throw new NotImplementedException();
     }
 
     public void StartShortGame()
     {
-
+        throw new NotImplementedException();
     }
 }
